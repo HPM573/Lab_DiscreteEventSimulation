@@ -1,4 +1,4 @@
-import SimPy.DiscreteEventClasses as SimCls
+import SimPy.DiscreteEventSim as SimCls
 import UrgentCareEvents as Events
 import SimPy.RandomVariantGenerators as RVGs
 import SimPy.SamplePathClasses as Path
@@ -25,11 +25,12 @@ class WaitingRoom:
         :param sim_cal: simulation calendar
         :param trace: simulation trace
         """
-        self.patients = []  # list to store patients waiting
+        self.patientsWaiting = []
         self.simCal = sim_cal
         self.trace = trace
-        # statistics
-        self.numPatientsWaiting = Stat.ContinuousTimeStat('Number of patients waiting', 0)
+        # sample path for the patients waiting
+        self.numPatientsWaiting = Path.PrevalencePathRealTimeUpdate(
+            name='Number of patients waiting', initial_size=0)
 
     def add_patient(self, patient):
         """ add a patient to the waiting room
@@ -38,51 +39,54 @@ class WaitingRoom:
         # store the time this patient joined the waiting room
         patient.tJoinedWaitingRoom = self.simCal.get_current_time()
         # add the patient to the list of patients waiting
-        self.patients.append(patient)
-        # update statistics
-        self.numPatientsWaiting.record(self.simCal.get_current_time(), +1)
+        self.patientsWaiting.append(patient)
+        # update the sample path
+        self.numPatientsWaiting.record(time=self.simCal.get_current_time(), increment=1)
         # trace
         self.trace.add_message(
-            str(patient) + ' joins the waiting room. Number waiting = ' + str(len(self.patients)) + '.')
+            str(patient) + ' joins the waiting room. Number waiting = ' + str(len(self.patientsWaiting)) + '.')
 
-    def next_patient(self):
+    def get_next_patient(self):
         """
         :returns: the next patient in line
         """
-        # update performance statistics
-        self.patients[0].tLeftWaitingRoom = self.simCal.get_current_time()
-        self.numPatientsWaiting.record(self.simCal.get_current_time(), -1)
+        # update the time the patient leaves the waiting room
+        self.patientsWaiting[0].tLeftWaitingRoom = self.simCal.get_current_time()
+
+        # update the sample path of patients waiting
+        self.numPatientsWaiting.record(time=self.simCal.get_current_time(), increment=-1)
 
         # trace
         self.trace.add_message(
-            str(self.patients[0]) + ' leaves the waiting room. Number waiting = ' + str(len(self.patients) - 1) + '.')
+            str(self.patientsWaiting[0]) + ' leaves the waiting room. Number waiting = '
+            + str(len(self.patientsWaiting) - 1) + '.')
+
         # pop the patient
-        return self.patients.pop(0)
+        return self.patientsWaiting.pop(0)
 
     def get_num_patients_waiting(self):
         """
         :return: the number of patient waiting in the waiting room
         """
-        return len(self.patients)
+        return len(self.patientsWaiting)
 
 
 class ExamRoom:
-    def __init__(self, idn, urgent_care, service_time_dist):
+    def __init__(self, id, urgent_care, service_time_dist):
         """ create an exam room
-        :param idn: (integer) the exam room ID
+        :param id: (integer) the exam room ID
         :param urgent_care: the urgent care object
         :param service_time_dist: distribution of service time in this exam room
         """
-        self.ID = idn
+        self.id = id
         self.urgentCare = urgent_care
-        self.rnd = urgent_care.rnd
         self.serviceTimeDist = service_time_dist
         self.isBusy = False
-        self.patientBeingServed = None
+        self.patientBeingServed = None  # the patient who is being served
 
     def __str__(self):
         """ :returns (string) the exam room number """
-        return "Exam Room " + str(self.ID)
+        return "Exam Room " + str(self.id)
 
     def exam(self, patient):
         """ starts examining on the passed patient
@@ -94,18 +98,22 @@ class ExamRoom:
         # trace
         self.urgentCare.trace.add_message(str(patient) + ' starts service in ' + str(self))
 
-        # find the exam completion time
-        exam_completion_time = self.urgentCare.simCal.get_current_time() + self.serviceTimeDist.sample(self.rnd)
+        # find the exam completion time (current time + service time)
+        exam_completion_time = self.urgentCare.simCal.get_current_time() \
+                               + self.serviceTimeDist.sample(rnd=self.urgentCare.rnd)
 
         # schedule the end of exam
         self.urgentCare.simCal.add_event(
-            Events.EndOfExam(exam_completion_time, self, self.urgentCare)
+            Events.EndOfExam(time=exam_completion_time, exam_room=self, urgent_care=self.urgentCare)
         )
 
     def remove_patient(self):
         """ :returns the patient that was being served in this exam room"""
 
+        # the exam room is idle now
         self.isBusy = False
+
+        # store the patient to be returned and set the patient that was being served to None
         returned_patient = self.patientBeingServed
         self.patientBeingServed = None
 
@@ -116,44 +124,42 @@ class ExamRoom:
 
 
 class UrgentCare:
-    def __init__(self, idn):
+    def __init__(self, id):
         """ creates an urgent care
-        :param idn: (integer) ID of this urgent care
+        :param id: (integer) ID of this urgent care
         :parameter: (Parameters) parameters of this urgent care
         """
 
-        self.id = idn                   # urgent care id
+        self.id = id                   # urgent care id
         self.ifOpen = True              # if the urgent care is open and admitting new patients
-        self.rnd = RVGs.RNG(seed=idn)    # random number generator
-        self.params = Parameters()        # parameters of this urgent care
+        self.rnd = RVGs.RNG(seed=id)    # random number generator
 
         # model entities
         self.patients = []          # list of patients
         self.waitingRoom = None     # the waiting room object
         self.examRooms = []         # list of exam rooms
+        self.params = Parameters()  # parameters of this urgent care
+        self.simOutputs = SimOutputs()  # simulation outputs
+
+        # set up the urgent care
+        self.__setup()
+
+    def __setup(self):
+        """ sets up the urgent care entities"""
 
         # set up the simulation calendar
         self.simCal = SimCls.SimulationCalendar()
 
         # set up trace
-        self.trace = SimCls.Trace(self.simCal, D.TRACE_ON, D.DECI)
-
-        # set up model entities
-        self.__setup_entities()
-
-        # initialize performance statistics
-        self.simOutputs = SimOutputs(self)
-
-    def __setup_entities(self):
-        """ sets up the urgent care entities"""
+        self.trace = SimCls.Trace(sim_calendar=self.simCal, if_should_trace=D.TRACE_ON, deci=D.DECI)
 
         # create a waiting room
-        self.waitingRoom = WaitingRoom(self.simCal, self.trace)
+        self.waitingRoom = WaitingRoom(sim_cal=self.simCal, trace=self.trace)
 
         # create exam rooms
         for i in range(0, self.params.nExamRooms):
             self.examRooms.append(
-                ExamRoom(idn=i,
+                ExamRoom(id=i,
                          urgent_care=self,
                          service_time_dist=self.params.examTimeDist)
             )
@@ -161,16 +167,13 @@ class UrgentCare:
     def __initialize(self):
         """ initialize simulating the urgent care """
 
-        # reset the simulation calendar
-        self.simCal.clear_calendar()
-
-        # find the arrival time of the first patient
-        arrival_time = self.params.arrivalTimeDist.sample(self.rnd)
-
         # schedule the closing event
         self.simCal.add_event(
             Events.CloseUrgentCare(time=self.params.hoursOpen, urgent_care=self)
         )
+
+        # find the arrival time of the first patient
+        arrival_time = self.params.arrivalTimeDist.sample(rng=self.rnd)
 
         # schedule the arrival of the first patient
         self.simCal.add_event(
@@ -190,13 +193,8 @@ class UrgentCare:
             self.simCal.get_next_event().process()
 
         # collect the end of simulation statistics
+        self.waitingRoom.numPatientsWaiting.record(time=self.simCal.get_current_time(), increment=0)
         self.simOutputs.collect_end_of_sim_stat()
-
-        return self.simOutputs
-
-    def print_trace(self):
-        """ outputs trace """
-        self.trace.print_trace("Replication" + str(self.id) + ".txt", '../Labs_DiscreteEventSimulation/Trace')
 
     def receive_patient(self, patient):
         """ receives a new patient
@@ -216,30 +214,32 @@ class UrgentCare:
 
         # find an idle exam room
         idle_room_found = False
-        i_room = 0
-        while (not idle_room_found) and i_room < len(self.examRooms):
-            if not self.examRooms[i_room].isBusy:
+        room_index = 0
+        while (not idle_room_found) and room_index < len(self.examRooms):
+            # if this room is busy
+            if self.examRooms[room_index].isBusy:
+                # check the next room
+                room_index += 1
+            else:
                 # send the last patient to this exam room
-                self.examRooms[i_room].exam(self.patients[-1])
+                self.examRooms[room_index].exam(patient=self.patients[-1])
                 idle_room_found = True
                 # collect statistics
-                self.simOutputs.process_start_exam(patient, self.simCal.get_current_time())
-            else:
-                i_room += 1
+                self.simOutputs.process_start_exam(time=self.simCal.get_current_time())
 
         # if no idle room was found
         if not idle_room_found:
             # add the patient to the waiting room
-            self.waitingRoom.add_patient(self.patients[-1])
+            self.waitingRoom.add_patient(patient=self.patients[-1])
 
-        # find the arrival time of the next patient
-        next_arrival_time = self.simCal.get_current_time() + self.params.arrivalTimeDist.sample(self.rnd)
+        # find the arrival time of the next patient (current time + time until next arrival)
+        next_arrival_time = self.simCal.get_current_time() + self.params.arrivalTimeDist.sample(rng=self.rnd)
 
         # schedule the arrival of the next patient
         self.simCal.add_event(
             Events.Arrival(
                 time=next_arrival_time,
-                patient=Patient(patient.ID + 1),
+                patient=Patient(id=patient.ID + 1),  # id of the next patient = this patient's id + 1
                 urgent_care=self
             )
         )
@@ -251,14 +251,18 @@ class UrgentCare:
         # get the patient who is about to be discharged
         discharged_patient = exam_room.remove_patient()
         # collect statistics
-        self.simOutputs.process_patient_departure(discharged_patient, self.simCal.get_current_time())
+        self.simOutputs.process_patient_departure(time=self.simCal.get_current_time())
 
         # check if there is any patient waiting
         if self.waitingRoom.get_num_patients_waiting() > 0:
             # start serving the next patient in line
-            exam_room.exam(self.waitingRoom.next_patient())
+            exam_room.exam(self.waitingRoom.get_next_patient())
             # collect statistics
-            self.simOutputs.process_start_exam(exam_room.patientBeingServed, self.simCal.get_current_time())
+            self.simOutputs.process_start_exam(time=self.simCal.get_current_time())
+
+    def print_trace(self):
+        """ outputs trace """
+        self.trace.print_trace(filename="Replication" + str(self.id) + ".txt", path='../Trace')
 
 
 class Parameters:
@@ -270,56 +274,21 @@ class Parameters:
         self.examTimeDist = RVGs.Exponential(scale=D.MEAN_EXAM_DURATION)
 
 
-class SamplePaths:
-    # store simulation sample paths (e.g. the number of patients in system over time)
-
-    def __init__(self, itr):
-        self.nOfPatients = Path.SamplePathRealTimeUpdate('Number of Patients', itr, 0)
-        self.utilization = Path.SamplePathRealTimeUpdate('Exam Room Utilization', itr, 0)
-
-    def update_num_patients(self, time, increment):
-        """
-        updates the number of patients in the system
-        :param time: time of this chance in the system
-        :param increment: (integer) change (+ or -) in the number of patients in the system
-        """
-        self.nOfPatients.record(time, increment)
-
-    def update_utilization(self, time, increment):
-        """
-        updates the utilization of exam rooms
-        :param time: time of this chance in the system
-        :param increment: change (+ or -) in the utilization of exam rooms
-        """
-        self.utilization.record(time, increment)
-
-    def get_sample_paths(self):
-        """ :returns samples paths stored during this simulation replicate """
-
-        return [self.nOfPatients, self.utilization]
-
-
 class SimOutputs:
     # to collect the outputs of a simulation run
 
-    def __init__(self, urgent_care):
-        """
-        :param urgent_care: the urgent care being simulated
-        """
-
-        self.urgentCare = urgent_care
-        self.nExamRooms = len(urgent_care.examRooms)
+    def __init__(self):
 
         # performance statistics collectors
         self.nPatientsArrived = 0
         self.nPatientServed = 0
-        self.patientsInSystem = Stat.ContinuousTimeStat('Number of patients in the urgent care', 0)
-        self.patientTimeInSystem = Stat.DiscreteTimeStat('Patient time in the urgent care')
-        self.patientWaitingTime = Stat.DiscreteTimeStat('Patient time in waiting room')
-        self.examRoomsUtil = Stat.ContinuousTimeStat('Exam room utilization', 0)
-
-        # sample paths
-        self.samplePaths = SamplePaths(urgent_care.id)
+        self.nPatientInSystem = Path.PrevalencePathRealTimeUpdate(
+            name='Number of patients in the urgent care', initial_size=0)
+        self.nExamRoomBusy = Path.PrevalencePathRealTimeUpdate(
+            name='Number of exam rooms busy', initial_size=0
+        )
+        self.patientTimeInSystem = []
+        self.patientTimeInWaitingRoom = []
 
     def process_patient_arrival(self, patient, time):
         """ collects statistics upon arrival of a patient
@@ -327,140 +296,47 @@ class SimOutputs:
         :param time: the arrival time
         """
         self.nPatientsArrived += 1
-        self.patientsInSystem.record(time, +1)
+        self.nPatientInSystem.record(time=time, increment=+1)
         # store the patient arrival time
         patient.tArrived = time
 
-        # update the sample path
-        self.samplePaths.update_num_patients(time, +1)
-
     def process_patient_departure(self, patient, time):
-        """ collects statistics for a departing a patient
-        :param patient: the patient who is departing
+        """ collects statistics for a departing patient
+        :param patient: the departing patient
         :param time: the departure time
         """
         self.nPatientServed += 1
-        self.patientsInSystem.record(time, -1)
-        self.patientTimeInSystem.record(time - patient.tArrived)
-        self.patientWaitingTime.record(patient.tLeftWaitingRoom - patient.tJoinedWaitingRoom)
-        self.examRoomsUtil.record(time, -1 / self.nExamRooms)
+        self.nPatientInSystem.record(time=time, increment=-1)
+        self.nExamRoomBusy.record(time=time, increment=-1)
+        self.patientTimeInSystem.append(time-patient.tArrived)
+        self.patientTimeInWaitingRoom.append(patient.tLeftWaitingRoom-patient.tJoinedWaitingRoom)
 
-        # update the sample path
-        self.samplePaths.update_num_patients(time, -1)
-        self.samplePaths.update_utilization(time, -1 / self.nExamRooms)
-
-    def process_start_exam(self, patient, time):
+    def process_start_exam(self, time):
         """ collects statistics for a patient who just started the exam
-        :param patient: the patient
         :param time: the time when the patient starts the exam
         """
-        self.examRoomsUtil.record(time, +1 / self.nExamRooms)
-        self.samplePaths.update_utilization(time, +1 / self.nExamRooms)
+        self.nExamRoomBusy.record(time=time, increment=+1)
 
-    def collect_end_of_sim_stat(self):
-        """ collects the performance statistics at the end of this replication of the urgent care simulation """
-
-        # get current simulation time
-        t = self.urgentCare.simCal.get_current_time()
+    def collect_end_of_sim_stat(self, time):
+        """
+        collects the performance statistics at the end of this replication of the urgent care simulation
+        :param time: simulation time
+        """
 
         # update sample paths
-        self.samplePaths.update_num_patients(t, 0)
-        self.samplePaths.update_utilization(t, 0)
+        self.nPatientInSystem.record(time=time, increment=0)
+        self.nExamRoomBusy.record(time=time, increment=0)
 
-        # update performance statistics
-        self.patientsInSystem.record(t, 0)
-        self.examRoomsUtil.record(t, 0)
-        self.urgentCare.waitingRoom.numPatientsWaiting.record(t, 0)
-
-    def print_outputs(self):
-        """ prints the collected statistics into a csv file """
-
-        summary = [
-            ['Output', 'Mean', 'Confidence Interval', 'Prediction Interval', 'St. Dev.', 'Minimum', 'Maximum'],
-            ['Number of patients arrived', self.nPatientsArrived],
-            ['Number of patients served', self.nPatientServed],
-            self.patientsInSystem.get_summary(D.ALPHA, D.DECI),
-            self.urgentCare.waitingRoom.numPatientsWaiting.get_summary(D.ALPHA, D.DECI),
-            self.patientTimeInSystem.get_summary(D.ALPHA, D.DECI),
-            self.patientWaitingTime.get_summary(D.ALPHA, D.DECI),
-            self.examRoomsUtil.get_summary(D.ALPHA, D.DECI)
-        ]
-
-        OutSupport.write_csv('Summary-Steady State.csv', summary)
-
-
-class ColOfUrgentCares:
-    """collection of urgent care model """
-
-    def __init__(self, ids):
+    def get_ave_patient_time_in_system(self):
         """
-        :param ids: (list) ids of urgent care models
+        :return: average patient time in system
         """
 
-        self.ids = ids
-        self.urgentCares = []   # list of urgent care models
+        return sum(self.patientTimeInSystem)/len(self.patientTimeInSystem)
 
-        self.obs_nPatientsArrived = []          # number of patients arrived
-        self.obs_nPatientsServed = []           # number of patients served
-        self.obs_avePatientsInSystem = []       # average number of patients in system
-        self.obs_avePatientsWaiting = []        # average number of patients waiting
-        self.obs_avePatientTimeInSystem = []    # average patient time in system
-        self.obs_avePatientWaitingTime = []     # average patient waiting time
-        self.obs_aveExamRoomsUtilization = []   # average exam room utilization
+    def get_ave_patient_waiting_time(self):
+        """
+        :return: average patient waiting time
+        """
 
-        self.nPatientsSamplePaths = []          # list of sample paths for number of patients in urgent care
-
-    def simulate(self):
-        """ simulate all urgent cares """
-
-        for i in range(len(self.ids)):
-
-            # create an urgent care
-            urgent_care = UrgentCare(idn=self.ids[i])
-
-            # simulate the urgent care
-            sim_output = urgent_care.simulate(D.SIM_DURATION)
-
-            # collect statistics
-            self.obs_nPatientsArrived.append(sim_output.nPatientsArrived)
-            self.obs_nPatientsServed.append(sim_output.nPatientServed)
-            self.obs_avePatientsInSystem.append(sim_output.patientsInSystem.get_mean())
-            self.obs_avePatientsWaiting.append(sim_output.patientWaitingTime.get_mean())
-            self.obs_avePatientTimeInSystem.append(sim_output.patientTimeInSystem.get_mean())
-            self.obs_avePatientWaitingTime.append(sim_output.patientWaitingTime.get_mean())
-            self.obs_aveExamRoomsUtilization.append(sim_output.examRoomsUtil.get_mean())
-
-            # store the sample path for the number of patients in the syste,
-            self.nPatientsSamplePaths.append(sim_output.samplePaths.get_sample_paths()[0])
-
-    def print_outputs(self):
-        """ prints the collected statistics into a csv file """
-
-        # summary statistics
-        n_patients_arrived = Stat.SummaryStat(
-            'Number of patients arrived', self.obs_nPatientsArrived)
-        n_patients_served = Stat.SummaryStat(
-            'Number of patients served', self.obs_nPatientsServed)
-        ave_patients_in_system = Stat.SummaryStat(
-            'Average number of patients in system', self.obs_avePatientsInSystem)
-        ave_patients_waiting =  Stat.SummaryStat(
-            'Average number of patients waiting', self.obs_avePatientsWaiting)
-        ave_patient_time_in_system = Stat.SummaryStat(
-            'Average patient time in system', self.obs_avePatientTimeInSystem)
-        ave_patient_waiting_time = Stat.SummaryStat(
-            'Average patient waiting time', self.obs_avePatientWaitingTime)
-        ave_exam_rooms_utilization = Stat.SummaryStat(
-            'Average exam room utilization', self.obs_aveExamRoomsUtilization)
-
-        summary = [
-            ['Output', 'Mean', 'Confidence Interval', 'Prediction Interval', 'St. Dev.', 'Minimum', 'Maximum'],
-            n_patients_arrived.get_summary(D.ALPHA, D.DECI),
-            n_patients_served.get_summary(D.ALPHA, D.DECI),
-            ave_patients_in_system.get_summary(D.ALPHA, D.DECI),
-            ave_patients_waiting.get_summary(D.ALPHA, D.DECI),
-            ave_patient_time_in_system.get_summary(D.ALPHA, D.DECI),
-            ave_patient_waiting_time.get_summary(D.ALPHA, D.DECI),
-            ave_exam_rooms_utilization.get_summary(D.ALPHA, D.DECI)
-        ]
-
-        OutSupport.write_csv('Summary-Transient State.csv', summary)
+        return sum(self.patientTimeInWaitingRoom) / len(self.patientTimeInWaitingRoom)
