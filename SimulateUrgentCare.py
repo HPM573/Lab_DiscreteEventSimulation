@@ -1,4 +1,4 @@
-import UrgentCareClasses as Cls
+import ModelEntities as Cls
 import InputData as D
 import SimPy.SamplePathClasses as Path
 
@@ -10,20 +10,20 @@ myUrgentCare.simulate(sim_duration=D.SIM_DURATION)
 
 # sample path for patients waiting
 Path.graph_sample_path(
-    sample_path=myUrgentCare.waitingRoom.patientsWaiting,
+    sample_path=myUrgentCare.waitingRoom.numPatientsWaiting,
     title='Patients Waiting',
-    x_label='Simulation time (hours)'
+    x_label='Simulation time (hours)',
 )
 # sample path for patients in the system
 Path.graph_sample_path(
     sample_path=myUrgentCare.simOutputs.nPatientInSystem,
     title='Patients In System',
-    x_label='Simulation time (hours)'
+    x_label='Simulation time (hours)',
 )
 # sample path for exam rooms busy
 Path.graph_sample_path(
     sample_path=myUrgentCare.simOutputs.nExamRoomBusy,
-    title='Busy Exam Rooms',
+    title='Exam Rooms Busy',
     x_label='Simulation time (hours)'
 )
 
