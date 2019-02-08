@@ -140,48 +140,38 @@ class UrgentCare:
         self.waitingRoom = None     # the waiting room object
         self.examRooms = []         # list of exam rooms
         self.params = P.Parameters()  # parameters of this urgent care
-
-        # set up the urgent care
-        self.__setup()
-
-    def __setup(self):
-        """ sets up the urgent care entities"""
-
-        # set up the simulation calendar
-        self.simCal = SimCls.SimulationCalendar()
-
-        # simulation output
+        self.simCal = SimCls.SimulationCalendar()   # simulation calendar
+        # simulation outputs
         self.simOutputs = O.SimOutputs(sim_cal=self.simCal)
-
-        # set up trace
-        self.trace = SimCls.Trace(sim_calendar=self.simCal, if_should_trace=D.TRACE_ON, deci=D.DECI)
-
-        # create a waiting room
-        self.waitingRoom = WaitingRoom(sim_cal=self.simCal, sim_out=self.simOutputs, trace=self.trace)
-
-        # create exam rooms
-        for i in range(0, self.params.nExamRooms):
-            self.examRooms.append(
-                ExamRoom(id=i,
-                         urgent_care=self,
-                         service_time_dist=self.params.examTimeDist)
-            )
+        # simulation trace
+        self.trace = SimCls.Trace(sim_calendar=self.simCal,
+                                  if_should_trace=D.TRACE_ON, deci=D.DECI)
 
     def __initialize(self):
         """ initialize simulating the urgent care """
 
+        # create a waiting room
+        self.waitingRoom = WaitingRoom(sim_cal=self.simCal,
+                                       sim_out=self.simOutputs,
+                                       trace=self.trace)
+
+        # create exam rooms
+        for i in range(0, self.params.nExamRooms):
+            self.examRooms.append(ExamRoom(id=i,
+                                           urgent_care=self,
+                                           service_time_dist=self.params.examTimeDist)
+                                  )
+
         # schedule the closing event
-        self.simCal.add_event(
-            E.CloseUrgentCare(time=self.params.hoursOpen, urgent_care=self)
-        )
+        self.simCal.add_event(event=E.CloseUrgentCare(time=self.params.hoursOpen,
+                                                      urgent_care=self))
 
         # find the arrival time of the first patient
         arrival_time = self.params.arrivalTimeDist.sample(rng=self.rnd)
 
         # schedule the arrival of the first patient
         self.simCal.add_event(
-            E.Arrival(time=arrival_time, patient=Patient(0), urgent_care=self)
-        )
+            E.Arrival(time=arrival_time, patient=Patient(0), urgent_care=self))
 
     def simulate(self, sim_duration):
         """ simulate the urgent care
@@ -192,6 +182,7 @@ class UrgentCare:
         self.__initialize()
 
         # while there is an event scheduled in the simulation calendar
+        # and the simulation time is less than the simulation duration
         while self.simCal.n_events() > 0 and self.simCal.time <= sim_duration:
             self.simCal.get_next_event().process()
 
@@ -215,8 +206,8 @@ class UrgentCare:
         # add the new patient to the list of patients
         self.patients.append(patient)
 
-        # collect statistics
-        self.simOutputs.process_patient_arrival(patient)
+        # collect statistics on new patient
+        self.simOutputs.process_patient_arrival(patient=patient)
 
         # find an idle exam room
         idle_room_found = False
@@ -262,13 +253,14 @@ class UrgentCare:
         discharged_patient = exam_room.remove_patient()
 
         # collect statistics
-        self.simOutputs.process_patient_departure(
-            patient=discharged_patient)
+        self.simOutputs.process_patient_departure(patient=discharged_patient)
 
         # check if there is any patient waiting
         if self.waitingRoom.get_num_patients_waiting() > 0:
+
             # start serving the next patient in line
             exam_room.exam(self.waitingRoom.get_next_patient())
+
             # collect statistics
             self.simOutputs.process_start_exam()
 
