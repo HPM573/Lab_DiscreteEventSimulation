@@ -10,7 +10,7 @@ myUrgentCare.simulate(sim_duration=D.SIM_DURATION)
 
 # sample path for patients waiting
 Path.graph_sample_path(
-    sample_path=myUrgentCare.waitingRoom.numPatientsWaiting,
+    sample_path=myUrgentCare.simOutputs.nPatientsWaiting,
     title='Patients Waiting',
     x_label='Simulation time (hours)',
 )

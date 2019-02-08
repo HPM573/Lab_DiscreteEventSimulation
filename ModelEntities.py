@@ -1,6 +1,5 @@
 import SimPy.DiscreteEventSim as SimCls
 import SimPy.RandomVariantGenerators as RVGs
-import SimPy.SamplePathClasses as Path
 import ModelEvents as E
 import InputData as D
 import ModelParameters as P
@@ -22,28 +21,28 @@ class Patient:
 
 
 class WaitingRoom:
-    def __init__(self, sim_cal, trace):
+    def __init__(self, sim_cal, sim_out, trace):
         """ create a waiting room
         :param sim_cal: simulation calendar
+        :param sim_out: simulation output
         :param trace: simulation trace
         """
-        self.patientsWaiting = []
-        self.simCal = sim_cal
-        self.trace = trace
-        # sample path for the patients waiting
-        self.numPatientsWaiting = Path.PrevalencePathRealTimeUpdate(
-            name='Number of patients waiting', initial_size=0)
+        self.patientsWaiting = []   # list of patients in the waiting room
+        self.simCal = sim_cal       # simulation calendar
+        self.simOut = sim_out       # simulation output
+        self.trace = trace          # simulation trace
 
     def add_patient(self, patient):
         """ add a patient to the waiting room
         :param patient: a patient to be added to the waiting room
         """
-        # store the time this patient joined the waiting room
-        patient.tJoinedWaitingRoom = self.simCal.get_current_time()
+
+        # update statistics for the patient who joins the waiting room
+        self.simOut.process_patient_join_waiting_room(patient=patient)
+
         # add the patient to the list of patients waiting
         self.patientsWaiting.append(patient)
-        # update the sample path
-        self.numPatientsWaiting.record(time=self.simCal.get_current_time(), increment=1)
+
         # trace
         self.trace.add_message(
             str(patient) + ' joins the waiting room. Number waiting = ' + str(len(self.patientsWaiting)) + '.')
@@ -52,11 +51,9 @@ class WaitingRoom:
         """
         :returns: the next patient in line
         """
-        # update the time the patient leaves the waiting room
-        self.patientsWaiting[0].tLeftWaitingRoom = self.simCal.get_current_time()
 
-        # update the sample path of patients waiting
-        self.numPatientsWaiting.record(time=self.simCal.get_current_time(), increment=-1)
+        # update statistics for the patient who joins the waiting room
+        self.simOut.process_patient_leave_waiting_room(patient=self.patientsWaiting[0])
 
         # trace
         self.trace.add_message(
@@ -91,9 +88,11 @@ class ExamRoom:
         return "Exam Room " + str(self.id)
 
     def exam(self, patient):
-        """ starts examining on the passed patient
+        """ starts examining on the patient
         :param patient: a patient
         """
+
+        # the exam room is busy
         self.patientBeingServed = patient
         self.isBusy = True
 
@@ -101,7 +100,7 @@ class ExamRoom:
         self.urgentCare.trace.add_message(str(patient) + ' starts service in ' + str(self))
 
         # find the exam completion time (current time + service time)
-        exam_completion_time = self.urgentCare.simCal.get_current_time() \
+        exam_completion_time = self.urgentCare.simCal.time \
                                + self.serviceTimeDist.sample(rng=self.urgentCare.rnd)
 
         # schedule the end of exam
@@ -141,7 +140,6 @@ class UrgentCare:
         self.waitingRoom = None     # the waiting room object
         self.examRooms = []         # list of exam rooms
         self.params = P.Parameters()  # parameters of this urgent care
-        self.simOutputs = O.SimOutputs()  # simulation outputs
 
         # set up the urgent care
         self.__setup()
@@ -152,11 +150,14 @@ class UrgentCare:
         # set up the simulation calendar
         self.simCal = SimCls.SimulationCalendar()
 
+        # simulation output
+        self.simOutputs = O.SimOutputs(sim_cal=self.simCal)
+
         # set up trace
         self.trace = SimCls.Trace(sim_calendar=self.simCal, if_should_trace=D.TRACE_ON, deci=D.DECI)
 
         # create a waiting room
-        self.waitingRoom = WaitingRoom(sim_cal=self.simCal, trace=self.trace)
+        self.waitingRoom = WaitingRoom(sim_cal=self.simCal, sim_out=self.simOutputs, trace=self.trace)
 
         # create exam rooms
         for i in range(0, self.params.nExamRooms):
@@ -191,17 +192,20 @@ class UrgentCare:
         self.__initialize()
 
         # while there is an event scheduled in the simulation calendar
-        while self.simCal.n_events() > 0 and self.simCal.get_current_time() <= sim_duration:
+        while self.simCal.n_events() > 0 and self.simCal.time <= sim_duration:
             self.simCal.get_next_event().process()
 
         # collect the end of simulation statistics
-        self.waitingRoom.numPatientsWaiting.record(time=self.simCal.get_current_time(), increment=0)
-        self.simOutputs.collect_end_of_sim_stat(time=self.simCal.get_current_time())
+        self.simOutputs.collect_end_of_sim_stat()
 
-    def receive_patient(self, patient):
+    def process_new_patient(self, patient):
         """ receives a new patient
         :param patient: the new patient
         """
+
+        # trace
+        self.trace.add_message(
+            'Processing arrival of ' + str(patient) + '.')
 
         # do not admit the patient if the urgent care is closed
         if not self.ifOpen:
@@ -212,7 +216,7 @@ class UrgentCare:
         self.patients.append(patient)
 
         # collect statistics
-        self.simOutputs.process_patient_arrival(patient, self.simCal.get_current_time())
+        self.simOutputs.process_patient_arrival(patient)
 
         # find an idle exam room
         idle_room_found = False
@@ -227,7 +231,7 @@ class UrgentCare:
                 self.examRooms[room_index].exam(patient=self.patients[-1])
                 idle_room_found = True
                 # collect statistics
-                self.simOutputs.process_start_exam(time=self.simCal.get_current_time())
+                self.simOutputs.process_start_exam()
 
         # if no idle room was found
         if not idle_room_found:
@@ -235,7 +239,7 @@ class UrgentCare:
             self.waitingRoom.add_patient(patient=self.patients[-1])
 
         # find the arrival time of the next patient (current time + time until next arrival)
-        next_arrival_time = self.simCal.get_current_time() + self.params.arrivalTimeDist.sample(rng=self.rnd)
+        next_arrival_time = self.simCal.time + self.params.arrivalTimeDist.sample(rng=self.rnd)
 
         # schedule the arrival of the next patient
         self.simCal.add_event(
@@ -250,19 +254,32 @@ class UrgentCare:
         """ processes the end of exam in the specified exam room
         :param exam_room: the exam room where the service is ended
         """
+
+        # trace
+        self.trace.add_message('Processing end of exam in ' + str(exam_room) + '.')
+
         # get the patient who is about to be discharged
         discharged_patient = exam_room.remove_patient()
+
         # collect statistics
         self.simOutputs.process_patient_departure(
-            patient=discharged_patient,
-            time=self.simCal.get_current_time())
+            patient=discharged_patient)
 
         # check if there is any patient waiting
         if self.waitingRoom.get_num_patients_waiting() > 0:
             # start serving the next patient in line
             exam_room.exam(self.waitingRoom.get_next_patient())
             # collect statistics
-            self.simOutputs.process_start_exam(time=self.simCal.get_current_time())
+            self.simOutputs.process_start_exam()
+
+    def process_close_urgent_care(self):
+        """ process the closing of the urgent care """
+
+        # trace
+        self.trace.add_message('Processing the closing of the urgent care.')
+
+        # close the urgent care
+        self.ifOpen = False
 
     def print_trace(self):
         """ outputs trace """

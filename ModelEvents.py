@@ -31,12 +31,8 @@ class Arrival(Event):
     def process(self):
         """ processes the arrival of a new patient """
 
-        # trace
-        self.urgentCare.trace.add_message(
-            'Processing arrival of ' + str(self.patient) + '.')
-
         # receive the new patient
-        self.urgentCare.receive_patient(self.patient)
+        self.urgentCare.process_new_patient(self.patient)
 
 
 class EndOfExam(Event):
@@ -59,9 +55,6 @@ class EndOfExam(Event):
 
     def process(self):
         """ processes the end of service event """
-
-        # trace
-        self.urgentCare.trace.add_message('Processing end of exam in ' + str(self.examRoom) + '.')
 
         # process the end of service for this exam room
         self.urgentCare.process_end_of_exam(self.examRoom)
@@ -87,7 +80,6 @@ class CloseUrgentCare(Event):
     def process(self):
         """ processes the closing event """
 
-        # trace
-        self.urgentCare.trace.add_message('Processing the closing event.')
         # close the urgent care
-        self.urgentCare.ifOpen = False
+        self.urgentCare.process_close_urgent_care()
+
