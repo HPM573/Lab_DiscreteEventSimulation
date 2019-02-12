@@ -19,7 +19,7 @@ class Arrival(Event):
         :param urgent_care: the urgent care
         """
         # initialize the master class
-        Event.__init__(self, time, Priority.ARRIVAL.value)
+        Event.__init__(self, time=time, priority=Priority.ARRIVAL.value)
 
         self.patient = patient
         self.urgentCare = urgent_care
@@ -44,7 +44,7 @@ class EndOfExam(Event):
         :param urgent_care: the urgent care
         """
         # initialize the base class
-        Event.__init__(self, time, Priority.END_OF_EXAM.value)
+        Event.__init__(self, time=time, priority=Priority.END_OF_EXAM.value)
 
         self.examRoom = exam_room
         self.urgentCare = urgent_care
@@ -71,7 +71,7 @@ class CloseUrgentCare(Event):
         self.urgentCare = urgent_care
 
         # call the master class initialization
-        Event.__init__(self, time, Priority.CLOSE.value)
+        Event.__init__(self, time=time, priority=Priority.CLOSE.value)
 
         # trace
         urgent_care.trace.add_message(
@@ -82,4 +82,3 @@ class CloseUrgentCare(Event):
 
         # close the urgent care
         self.urgentCare.process_close_urgent_care()
-
