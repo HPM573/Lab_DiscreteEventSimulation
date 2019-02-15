@@ -38,7 +38,7 @@ class WaitingRoom:
         """
 
         # update statistics for the patient who joins the waiting room
-        self.simOut.process_patient_join_waiting_room(patient=patient)
+        self.simOut.collect_patient_join_waiting_room(patient=patient)
 
         # add the patient to the list of patients waiting
         self.patientsWaiting.append(patient)
@@ -53,7 +53,7 @@ class WaitingRoom:
         """
 
         # update statistics for the patient who joins the waiting room
-        self.simOut.process_patient_leave_waiting_room(patient=self.patientsWaiting[0])
+        self.simOut.collect_patient_leave_waiting_room(patient=self.patientsWaiting[0])
 
         # trace
         self.trace.add_message(
@@ -207,7 +207,7 @@ class UrgentCare:
         self.patients.append(patient)
 
         # collect statistics on new patient
-        self.simOutputs.process_patient_arrival(patient=patient)
+        self.simOutputs.collect_patient_arrival(patient=patient)
 
         # find an idle exam room
         idle_room_found = False
@@ -222,7 +222,7 @@ class UrgentCare:
                 self.examRooms[room_index].exam(patient=self.patients[-1])
                 idle_room_found = True
                 # collect statistics
-                self.simOutputs.process_start_exam()
+                self.simOutputs.collect_start_exam()
 
         # if no idle room was found
         if not idle_room_found:
@@ -253,7 +253,7 @@ class UrgentCare:
         discharged_patient = exam_room.remove_patient()
 
         # collect statistics
-        self.simOutputs.process_patient_departure(patient=discharged_patient)
+        self.simOutputs.collect_patient_departure(patient=discharged_patient)
 
         # check if there is any patient waiting
         if self.waitingRoom.get_num_patients_waiting() > 0:
@@ -262,7 +262,7 @@ class UrgentCare:
             exam_room.exam(self.waitingRoom.get_next_patient())
 
             # collect statistics
-            self.simOutputs.process_start_exam()
+            self.simOutputs.collect_start_exam()
 
     def process_close_urgent_care(self):
         """ process the closing of the urgent care """

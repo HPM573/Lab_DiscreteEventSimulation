@@ -28,7 +28,7 @@ class SimOutputs:
             name='Number of exam rooms busy', initial_size=0
         )
 
-    def process_patient_arrival(self, patient):
+    def collect_patient_arrival(self, patient):
         """ collects statistics upon arrival of a patient
         :param patient: the patient who just arrived
         :param time: the arrival time
@@ -43,7 +43,7 @@ class SimOutputs:
         # store arrival time of this patient
         patient.tArrived = self.simCal.time
 
-    def process_patient_join_waiting_room(self, patient):
+    def collect_patient_join_waiting_room(self, patient):
         """ collects statistics when a patient joins the waiting room
         :param patient: the patient who is joining the waiting room
         """
@@ -54,7 +54,7 @@ class SimOutputs:
         # update the sample path
         self.nPatientsWaiting.record(time=self.simCal.time, increment=1)
 
-    def process_patient_leave_waiting_room(self, patient):
+    def collect_patient_leave_waiting_room(self, patient):
         """ collects statistics when a patient leave the waiting room
         :param patient: the patient who is leave the waiting room
         """
@@ -65,7 +65,7 @@ class SimOutputs:
         # update the sample path
         self.nPatientsWaiting.record(time=self.simCal.time, increment=-1)
 
-    def process_patient_departure(self, patient):
+    def collect_patient_departure(self, patient):
         """ collects statistics for a departing patient
         :param patient: the departing patient
         """
@@ -76,7 +76,7 @@ class SimOutputs:
         self.patientTimeInSystem.append(self.simCal.time-patient.tArrived)
         self.patientTimeInWaitingRoom.append(patient.tLeftWaitingRoom-patient.tJoinedWaitingRoom)
 
-    def process_start_exam(self):
+    def collect_start_exam(self):
         """ collects statistics for a patient who just started the exam """
 
         self.nExamRoomBusy.record(time=self.simCal.time, increment=+1)
