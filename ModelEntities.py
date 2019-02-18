@@ -115,12 +115,12 @@ class ExamRoom:
     def remove_patient(self):
         """ :returns the patient that was being served in this exam room"""
 
-        # the exam room is idle now
-        self.isBusy = False
-
         # store the patient to be returned and set the patient that was being served to None
         returned_patient = self.patientBeingServed
         self.patientBeingServed = None
+
+        # the exam room is idle now
+        self.isBusy = False
 
         # trace
         self.trace.add_message(str(returned_patient) + ' leaves ' + str(self) + '.')
@@ -177,7 +177,7 @@ class UrgentCare:
 
         # schedule the arrival of the first patient
         self.simCal.add_event(
-            event= E.Arrival(time=arrival_time, patient=Patient(0), urgent_care=self))
+            event=E.Arrival(time=arrival_time, patient=Patient(id=0), urgent_care=self))
 
     def simulate(self, sim_duration):
         """ simulate the urgent care
@@ -221,7 +221,7 @@ class UrgentCare:
             # if this room is busy
             if not room.isBusy:
                 # send the last patient to this exam room
-                room.exam(patient=self.patients[-1], rng=self.rng)
+                room.exam(patient=patient, rng=self.rng)
                 idle_room_found = True
                 # collect statistics
                 self.simOutputs.collect_start_exam()
@@ -231,7 +231,7 @@ class UrgentCare:
         # if no idle room was found
         if not idle_room_found:
             # add the patient to the waiting room
-            self.waitingRoom.add_patient(patient=self.patients[-1])
+            self.waitingRoom.add_patient(patient=patient)
 
         # find the arrival time of the next patient (current time + time until next arrival)
         next_arrival_time = self.simCal.time + self.params.arrivalTimeDist.sample(rng=self.rng)
