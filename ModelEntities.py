@@ -136,8 +136,8 @@ class UrgentCare:
         """
 
         self.id = id                   # urgent care id
-        self.ifOpen = True              # if the urgent care is open and admitting new patients
         self.rng = RVGs.RNG(seed=id)    # random number generator
+        self.ifOpen = True  # if the urgent care is open and admitting new patients
 
         # model entities
         self.patients = []          # list of patients
@@ -164,7 +164,7 @@ class UrgentCare:
             self.examRooms.append(ExamRoom(id=i,
                                            service_time_dist=self.params.examTimeDist,
                                            urgent_care=self,
-                                           sim_cal= self.simCal,
+                                           sim_cal=self.simCal,
                                            trace=self.trace)
                                   )
 

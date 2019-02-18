@@ -32,7 +32,7 @@ class Arrival(Event):
         """ processes the arrival of a new patient """
 
         # receive the new patient
-        self.urgentCare.process_new_patient(self.patient)
+        self.urgentCare.process_new_patient(patient=self.patient)
 
 
 class EndOfExam(Event):
@@ -57,7 +57,7 @@ class EndOfExam(Event):
         """ processes the end of service event """
 
         # process the end of service for this exam room
-        self.urgentCare.process_end_of_exam(self.examRoom)
+        self.urgentCare.process_end_of_exam(exam_room=self.examRoom)
 
 
 class CloseUrgentCare(Event):
