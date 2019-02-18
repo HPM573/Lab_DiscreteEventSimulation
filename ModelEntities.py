@@ -261,6 +261,9 @@ class UrgentCare:
         # collect statistics
         self.simOutputs.collect_patient_departure(patient=discharged_patient)
 
+        # remove the discharged patient from the list of patients
+        self.patients.remove(discharged_patient)
+
         # check if there is any patient waiting
         if self.waitingRoom.get_num_patients_waiting() > 0:
 
@@ -287,4 +290,3 @@ class UrgentCare:
         IO.write_csv(file_name='Replication' + str(self.id) + '-Summary.txt',
                      rows=self.simOutputs.patientSummary,
                      directory='Trace')
-
