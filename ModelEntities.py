@@ -125,10 +125,10 @@ class ExamRoom:
 
 
 class UrgentCare:
-    def __init__(self, id):
+    def __init__(self, id, parameters):
         """ creates an urgent care
-        :param id: (integer) ID of this urgent care
-        :parameter: (Parameters) parameters of this urgent care
+        :param id: ID of this urgent care
+        :parameters: parameters of this urgent care
         """
 
         self.id = id                   # urgent care id
@@ -139,7 +139,7 @@ class UrgentCare:
         self.patients = []          # list of patients
         self.waitingRoom = None     # the waiting room object
         self.examRooms = []         # list of exam rooms
-        self.params = P.Parameters()  # parameters of this urgent care
+        self.params = parameters    # parameters of this urgent care
         self.simCal = SimCls.SimulationCalendar()   # simulation calendar
         # simulation outputs
         self.simOutputs = O.SimOutputs(sim_cal=self.simCal)

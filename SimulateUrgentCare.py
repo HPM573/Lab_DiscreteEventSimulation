@@ -1,9 +1,10 @@
 import ModelEntities as Cls
 import InputData as D
+import ModelParameters as P
 import SimPy.SamplePathClasses as Path
 
 # create an urgent care
-myUrgentCare = Cls.UrgentCare(id=1)
+myUrgentCare = Cls.UrgentCare(id=1, parameters=P.Parameters())
 
 # simulate the urgent care
 myUrgentCare.simulate(sim_duration=D.SIM_DURATION)
