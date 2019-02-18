@@ -163,15 +163,15 @@ class UrgentCare:
                                   )
 
         # schedule the closing event
-        self.simCal.add_event(event=E.CloseUrgentCare(time=self.params.hoursOpen,
-                                                      urgent_care=self))
+        self.simCal.add_event(
+            event=E.CloseUrgentCare(time=self.params.hoursOpen, urgent_care=self))
 
         # find the arrival time of the first patient
         arrival_time = self.params.arrivalTimeDist.sample(rng=self.rnd)
 
         # schedule the arrival of the first patient
         self.simCal.add_event(
-            E.Arrival(time=arrival_time, patient=Patient(0), urgent_care=self))
+            event= E.Arrival(time=arrival_time, patient=Patient(0), urgent_care=self))
 
     def simulate(self, sim_duration):
         """ simulate the urgent care
