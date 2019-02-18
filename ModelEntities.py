@@ -206,7 +206,7 @@ class UrgentCare:
 
         # do not admit the patient if the urgent care is closed
         if not self.ifOpen:
-            self.trace.add_message('Urgent care closed. '+str(patient)+' does not get admitted.')
+            self.trace.add_message('Urgent care is closed. '+str(patient)+' does not get admitted.')
             return
 
         # add the new patient to the list of patients
@@ -217,18 +217,16 @@ class UrgentCare:
 
         # find an idle exam room
         idle_room_found = False
-        room_index = 0
-        while (not idle_room_found) and room_index < len(self.examRooms):
+        for room in self.examRooms:
             # if this room is busy
-            if self.examRooms[room_index].isBusy:
-                # check the next room
-                room_index += 1
-            else:
+            if not room.isBusy:
                 # send the last patient to this exam room
-                self.examRooms[room_index].exam(patient=self.patients[-1], rng=self.rng)
+                room.exam(patient=self.patients[-1], rng=self.rng)
                 idle_room_found = True
                 # collect statistics
                 self.simOutputs.collect_start_exam()
+                # break the for loop
+                break
 
         # if no idle room was found
         if not idle_room_found:
@@ -240,7 +238,7 @@ class UrgentCare:
 
         # schedule the arrival of the next patient
         self.simCal.add_event(
-            E.Arrival(
+            event=E.Arrival(
                 time=next_arrival_time,
                 patient=Patient(id=patient.id + 1),  # id of the next patient = this patient's id + 1
                 urgent_care=self
