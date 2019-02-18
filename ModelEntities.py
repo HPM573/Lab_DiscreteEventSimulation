@@ -2,8 +2,8 @@ import SimPy.DiscreteEventSim as SimCls
 import SimPy.RandomVariantGenerators as RVGs
 import ModelEvents as E
 import InputData as D
-import ModelParameters as P
 import ModelOutputs as O
+import SimPy.InOutFunctions as IO
 
 
 class Patient:
@@ -71,15 +71,19 @@ class WaitingRoom:
 
 
 class ExamRoom:
-    def __init__(self, id, urgent_care, service_time_dist):
+    def __init__(self, id, service_time_dist, urgent_care, sim_cal, trace):
         """ create an exam room
         :param id: (integer) the exam room ID
-        :param urgent_care: the urgent care object
         :param service_time_dist: distribution of service time in this exam room
+        :param urgent_care: urgent care
+        :param sim_cal: simulation calendar
+        :param trace: simulation trace
         """
         self.id = id
-        self.urgentCare = urgent_care
         self.serviceTimeDist = service_time_dist
+        self.urgentCare = urgent_care
+        self.simCal = sim_cal
+        self.trace = trace
         self.isBusy = False
         self.patientBeingServed = None  # the patient who is being served
 
@@ -87,9 +91,10 @@ class ExamRoom:
         """ :returns (string) the exam room number """
         return "Exam Room " + str(self.id)
 
-    def exam(self, patient):
+    def exam(self, patient, rng):
         """ starts examining on the patient
         :param patient: a patient
+        :param rng: random number generator
         """
 
         # the exam room is busy
@@ -97,14 +102,13 @@ class ExamRoom:
         self.isBusy = True
 
         # trace
-        self.urgentCare.trace.add_message(str(patient) + ' starts service in ' + str(self))
+        self.trace.add_message(str(patient) + ' starts service in ' + str(self))
 
         # find the exam completion time (current time + service time)
-        exam_completion_time = self.urgentCare.simCal.time \
-                               + self.serviceTimeDist.sample(rng=self.urgentCare.rnd)
+        exam_completion_time = self.simCal.time + self.serviceTimeDist.sample(rng=rng)
 
         # schedule the end of exam
-        self.urgentCare.simCal.add_event(
+        self.simCal.add_event(
             E.EndOfExam(time=exam_completion_time, exam_room=self, urgent_care=self.urgentCare)
         )
 
@@ -119,7 +123,7 @@ class ExamRoom:
         self.patientBeingServed = None
 
         # trace
-        self.urgentCare.trace.add_message(str(returned_patient) + ' leaves ' + str(self) + '.')
+        self.trace.add_message(str(returned_patient) + ' leaves ' + str(self) + '.')
 
         return returned_patient
 
@@ -133,7 +137,7 @@ class UrgentCare:
 
         self.id = id                   # urgent care id
         self.ifOpen = True              # if the urgent care is open and admitting new patients
-        self.rnd = RVGs.RNG(seed=id)    # random number generator
+        self.rng = RVGs.RNG(seed=id)    # random number generator
 
         # model entities
         self.patients = []          # list of patients
@@ -158,8 +162,10 @@ class UrgentCare:
         # create exam rooms
         for i in range(0, self.params.nExamRooms):
             self.examRooms.append(ExamRoom(id=i,
+                                           service_time_dist=self.params.examTimeDist,
                                            urgent_care=self,
-                                           service_time_dist=self.params.examTimeDist)
+                                           sim_cal= self.simCal,
+                                           trace=self.trace)
                                   )
 
         # schedule the closing event
@@ -167,7 +173,7 @@ class UrgentCare:
             event=E.CloseUrgentCare(time=self.params.hoursOpen, urgent_care=self))
 
         # find the arrival time of the first patient
-        arrival_time = self.params.arrivalTimeDist.sample(rng=self.rnd)
+        arrival_time = self.params.arrivalTimeDist.sample(rng=self.rng)
 
         # schedule the arrival of the first patient
         self.simCal.add_event(
@@ -219,7 +225,7 @@ class UrgentCare:
                 room_index += 1
             else:
                 # send the last patient to this exam room
-                self.examRooms[room_index].exam(patient=self.patients[-1])
+                self.examRooms[room_index].exam(patient=self.patients[-1], rng=self.rng)
                 idle_room_found = True
                 # collect statistics
                 self.simOutputs.collect_start_exam()
@@ -230,7 +236,7 @@ class UrgentCare:
             self.waitingRoom.add_patient(patient=self.patients[-1])
 
         # find the arrival time of the next patient (current time + time until next arrival)
-        next_arrival_time = self.simCal.time + self.params.arrivalTimeDist.sample(rng=self.rnd)
+        next_arrival_time = self.simCal.time + self.params.arrivalTimeDist.sample(rng=self.rng)
 
         # schedule the arrival of the next patient
         self.simCal.add_event(
@@ -259,7 +265,7 @@ class UrgentCare:
         if self.waitingRoom.get_num_patients_waiting() > 0:
 
             # start serving the next patient in line
-            exam_room.exam(self.waitingRoom.get_next_patient())
+            exam_room.exam(patient=self.waitingRoom.get_next_patient(), rng=self.rng)
 
             # collect statistics
             self.simOutputs.collect_start_exam()
@@ -275,5 +281,10 @@ class UrgentCare:
 
     def print_trace(self):
         """ outputs trace """
-        self.trace.print_trace(filename="Replication" + str(self.id) + ".txt", directory='Trace')
+        # simulation trace
+        self.trace.print_trace(filename='Replication' + str(self.id) + '-Trace.txt', directory='Trace')
+        # patient summary
+        IO.write_csv(file_name='Replication' + str(self.id) + '-Summary.txt',
+                     rows=self.simOutputs.patientSummary,
+                     directory='Trace')
 

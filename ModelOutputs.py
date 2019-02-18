@@ -14,6 +14,9 @@ class SimOutputs:
         self.nPatientServed = 0         # number of patients served
         self.patientTimeInSystem = []   # observations on patients time in urgent care
         self.patientTimeInWaitingRoom = []  # observations on patients time in the waiting room
+        self.patientSummary = []    # id, tArrived, tLeft, duration waited, duration in the system
+        self.patientSummary.append(
+            ['Patient', 'Time Arrived', 'Time Left', 'Time Waited', 'Time In the System'])
 
         # sample path for the patients waiting
         self.nPatientsWaiting = Path.PrevalencePathRealTimeUpdate(
@@ -70,11 +73,23 @@ class SimOutputs:
         :param patient: the departing patient
         """
 
+        time_waiting = patient.tLeftWaitingRoom-patient.tJoinedWaitingRoom
+        time_in_system = self.simCal.time-patient.tArrived
+
         self.nPatientServed += 1
         self.nPatientInSystem.record(time=self.simCal.time, increment=-1)
         self.nExamRoomBusy.record(time=self.simCal.time, increment=-1)
-        self.patientTimeInSystem.append(self.simCal.time-patient.tArrived)
-        self.patientTimeInWaitingRoom.append(patient.tLeftWaitingRoom-patient.tJoinedWaitingRoom)
+        self.patientTimeInWaitingRoom.append(time_waiting)
+        self.patientTimeInSystem.append(time_in_system)
+
+        # build the patient summary
+        self.patientSummary.append([
+            str(patient),        # name
+            patient.tArrived,    # time arrived
+            self.simCal.time,    # time left
+            time_waiting,        # time waiting
+            time_in_system]      # time in the system
+        )
 
     def collect_start_exam(self):
         """ collects statistics for a patient who just started the exam """
