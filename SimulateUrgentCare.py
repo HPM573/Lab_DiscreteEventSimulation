@@ -2,6 +2,7 @@ import ModelEntities as Cls
 import InputData as D
 import ModelParameters as P
 import SimPy.SamplePathClasses as Path
+import SimPy.FigureSupport as Fig
 
 # create an urgent care
 myUrgentCare = Cls.UrgentCare(id=1, parameters=P.Parameters())
@@ -26,6 +27,16 @@ Path.graph_sample_path(
     sample_path=myUrgentCare.simOutputs.nExamRoomBusy,
     title='Exam Rooms Busy',
     x_label='Simulation time (hours)'
+)
+Fig.graph_histogram(
+    data=myUrgentCare.simOutputs.patientTimeInSystem,
+    title='Patients Time in System',
+    x_label='Hours',
+)
+Fig.graph_histogram(
+    data=myUrgentCare.simOutputs.patientTimeInWaitingRoom,
+    title='Patients Time in Waiting Room',
+    x_label='Hours',
 )
 
 # outputs
