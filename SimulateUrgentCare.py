@@ -45,5 +45,11 @@ print('Patients served:', myUrgentCare.simOutputs.nPatientServed)
 print('Average patient time in system:', myUrgentCare.simOutputs.get_ave_patient_time_in_system())
 print('Average patient waiting time:', myUrgentCare.simOutputs.get_ave_patient_waiting_time())
 
+print('Maximum number of patients in the waiting room:', myUrgentCare.simOutputs.nPatientsWaiting.stat.get_max())
+print('Average number of patients in the waiting room:', myUrgentCare.simOutputs.nPatientsWaiting.stat.get_mean())
+print('Average number of patients in the system:', myUrgentCare.simOutputs.nPatientInSystem.stat.get_mean())
+print('Utilization of exam rooms:', myUrgentCare.simOutputs.nExamRoomBusy.stat.get_mean())
+
+
 # print statistics
 myUrgentCare.print_trace()
