@@ -39,7 +39,7 @@ Fig.graph_histogram(
     x_label='Hours',
 )
 
-# outputs
+# performance statistics
 print('Patients arrived:', myUrgentCare.simOutputs.nPatientsArrived)
 print('Patients served:', myUrgentCare.simOutputs.nPatientServed)
 print('Average patient time in system:', myUrgentCare.simOutputs.get_ave_patient_time_in_system())
