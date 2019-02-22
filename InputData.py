@@ -1,7 +1,7 @@
 
 # trace
 TRACE_ON = True        # Set to true to trace a simulation replication
-DECI = 3                # the decimal point to round the numbers to in the trace file
+DECI = 5                # the decimal point to round the numbers to in the trace file
 
 # simulation settings
 SIM_DURATION = 100000   # (hours) a large number to me sure the simulation will be terminated eventually but

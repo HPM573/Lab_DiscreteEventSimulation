@@ -1,4 +1,5 @@
 import SimPy.DiscreteEventSim as SimCls
+import SimPy.SimulationSupport as Sim
 import SimPy.RandomVariantGenerators as RVGs
 import ModelEvents as E
 import InputData as D
@@ -148,9 +149,9 @@ class UrgentCare:
         # simulation outputs
         self.simOutputs = O.SimOutputs(sim_cal=self.simCal, trace_on=D.TRACE_ON)
         # simulation trace
-        self.trace = SimCls.Trace(sim_calendar=self.simCal,
-                                  if_should_trace=D.TRACE_ON,
-                                  deci=D.DECI)
+        self.trace = Sim.DESimulationTrace(sim_calendar=self.simCal,
+                                           if_should_trace=D.TRACE_ON,
+                                           deci=D.DECI)
 
     def __initialize(self):
         """ initialize simulating the urgent care """
@@ -283,9 +284,13 @@ class UrgentCare:
 
     def print_trace(self):
         """ outputs trace """
+
         # simulation trace
-        self.trace.print_trace(filename='Replication' + str(self.id) + '-Trace.txt', directory='Trace')
+        self.trace.print_trace(filename='Trace-Replication' + str(self.id) + '.txt',
+                               directory='Trace',
+                               delete_existing_files=True)
         # patient summary
-        IO.write_csv(file_name='Replication' + str(self.id) + '-Summary.txt',
+        IO.write_csv(file_name='Patients-Replication' + str(self.id) + '.txt',
                      rows=self.simOutputs.patientSummary,
-                     directory='Trace')
+                     directory='Patients Summary',
+                     delete_existing_files=True)
