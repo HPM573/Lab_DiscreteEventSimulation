@@ -149,9 +149,9 @@ class UrgentCare:
         # simulation outputs
         self.simOutputs = O.SimOutputs(sim_cal=self.simCal, trace_on=D.TRACE_ON)
         # simulation trace
-        self.trace = Sim.DESimulationTrace(sim_calendar=self.simCal,
-                                           if_should_trace=D.TRACE_ON,
-                                           deci=D.DECI)
+        self.trace = Sim.DiscreteEventSimTrace(sim_calendar=self.simCal,
+                                               if_should_trace=D.TRACE_ON,
+                                               deci=D.DECI)
 
     def __initialize(self):
         """ initialize simulating the urgent care """
