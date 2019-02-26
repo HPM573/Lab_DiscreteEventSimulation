@@ -72,18 +72,20 @@ class WaitingRoom:
 
 
 class ExamRoom:
-    def __init__(self, id, service_time_dist, urgent_care, sim_cal, trace):
+    def __init__(self, id, service_time_dist, urgent_care, sim_cal, sim_out, trace):
         """ create an exam room
         :param id: (integer) the exam room ID
         :param service_time_dist: distribution of service time in this exam room
         :param urgent_care: urgent care
         :param sim_cal: simulation calendar
+        :param sim_out: simulation output
         :param trace: simulation trace
         """
         self.id = id
         self.serviceTimeDist = service_time_dist
         self.urgentCare = urgent_care
         self.simCal = sim_cal
+        self.simOut = sim_out  # simulation output
         self.trace = trace
         self.isBusy = False
         self.patientBeingServed = None  # the patient who is being served
@@ -105,6 +107,9 @@ class ExamRoom:
         # trace
         self.trace.add_message(str(patient) + ' starts service in ' + str(self))
 
+        # collect statistics
+        self.simOut.collect_start_exam()
+
         # find the exam completion time (current time + service time)
         exam_completion_time = self.simCal.time + self.serviceTimeDist.sample(rng=rng)
 
@@ -122,6 +127,9 @@ class ExamRoom:
 
         # the exam room is idle now
         self.isBusy = False
+
+        # collect statistics
+        self.simOut.collect_patient_departure(patient=returned_patient)
 
         # trace
         self.trace.add_message(str(returned_patient) + ' leaves ' + str(self) + '.')
@@ -167,6 +175,7 @@ class UrgentCare:
                                            service_time_dist=self.params.examTimeDist,
                                            urgent_care=self,
                                            sim_cal=self.simCal,
+                                           sim_out=self.simOutputs,
                                            trace=self.trace)
                                   )
 
@@ -225,8 +234,6 @@ class UrgentCare:
                 # send the last patient to this exam room
                 room.exam(patient=patient, rng=self.rng)
                 idle_room_found = True
-                # collect statistics
-                self.simOutputs.collect_start_exam()
                 # break the for loop
                 break
 
@@ -258,9 +265,6 @@ class UrgentCare:
         # get the patient who is about to be discharged
         discharged_patient = exam_room.remove_patient()
 
-        # collect statistics
-        self.simOutputs.collect_patient_departure(patient=discharged_patient)
-
         # remove the discharged patient from the list of patients
         self.patients.remove(discharged_patient)
 
@@ -269,9 +273,6 @@ class UrgentCare:
 
             # start serving the next patient in line
             exam_room.exam(patient=self.waitingRoom.get_next_patient(), rng=self.rng)
-
-            # collect statistics
-            self.simOutputs.collect_start_exam()
 
     def process_close_urgent_care(self):
         """ process the closing of the urgent care """
