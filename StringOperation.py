@@ -10,4 +10,4 @@ class Patient:
 
 myPatient = Patient(id=1, age=40)
 
-print(str(myPatient))
+print(str(myPatient), 'arrived.')
