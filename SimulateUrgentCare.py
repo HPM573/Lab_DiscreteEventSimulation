@@ -1,8 +1,8 @@
 import ModelEntities as Cls
 import InputData as D
 import ModelParameters as P
-import SimPy.SamplePathClasses as Path
-import SimPy.FigureSupport as Fig
+import SimPy.Plots.Histogram as Hist
+import SimPy.Plots.SamplePaths as Path
 
 # create an urgent care
 myUrgentCare = Cls.UrgentCare(id=1, parameters=P.Parameters())
@@ -11,29 +11,29 @@ myUrgentCare = Cls.UrgentCare(id=1, parameters=P.Parameters())
 myUrgentCare.simulate(sim_duration=D.SIM_DURATION)
 
 # sample path for patients waiting
-Path.graph_sample_path(
+Path.plot_sample_path(
     sample_path=myUrgentCare.simOutputs.nPatientsWaiting,
     title='Patients Waiting',
     x_label='Simulation time (hours)',
 )
 # sample path for patients in the system
-Path.graph_sample_path(
+Path.plot_sample_path(
     sample_path=myUrgentCare.simOutputs.nPatientInSystem,
     title='Patients In System',
     x_label='Simulation time (hours)',
 )
 # sample path for exam rooms busy
-Path.graph_sample_path(
+Path.plot_sample_path(
     sample_path=myUrgentCare.simOutputs.nExamRoomBusy,
     title='Exam Rooms Busy',
     x_label='Simulation time (hours)'
 )
-Fig.graph_histogram(
+Hist.plot_histogram(
     data=myUrgentCare.simOutputs.patientTimeInSystem,
     title='Patients Time in System',
     x_label='Hours',
 )
-Fig.graph_histogram(
+Hist.plot_histogram(
     data=myUrgentCare.simOutputs.patientTimeInWaitingRoom,
     title='Patients Time in Waiting Room',
     x_label='Hours',
