@@ -16,6 +16,7 @@ class SimOutputs:
         self.nPatientServed = 0         # number of patients served
         self.patientTimeInSystem = []   # observations on patients time in urgent care
         self.patientTimeInWaitingRoom = []  # observations on patients time in the waiting room
+
         self.patientSummary = []    # id, tArrived, tLeft, duration waited, duration in the system
         if self.traceOn:
             self.patientSummary.append(
