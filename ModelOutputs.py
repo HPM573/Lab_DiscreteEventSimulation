@@ -13,7 +13,7 @@ class SimOutputs:
         self.simCal = sim_cal           # simulation calendar (to know the current time)
         self.traceOn = trace_on         # if should prepare patient summary report
         self.nPatientsArrived = 0       # number of patients arrived
-        self.nPatientServed = 0         # number of patients served
+        self.nPatientsServed = 0         # number of patients served
         self.patientTimeInSystem = []   # observations on patients time in urgent care
         self.patientTimeInWaitingRoom = []  # observations on patients time in the waiting room
 
@@ -79,7 +79,7 @@ class SimOutputs:
         time_waiting = patient.tLeftWaitingRoom-patient.tJoinedWaitingRoom
         time_in_system = self.simCal.time-patient.tArrived
 
-        self.nPatientServed += 1
+        self.nPatientsServed += 1
         self.nPatientInSystem.record_increment(time=self.simCal.time, increment=-1)
         self.nExamRoomBusy.record_increment(time=self.simCal.time, increment=-1)
         self.patientTimeInWaitingRoom.append(time_waiting)
