@@ -25,8 +25,7 @@ class SimOutputs:
 
         # sample path for the number of exam rooms busy
         self.nExamRoomBusy = Path.PrevalenceSamplePath(
-            name='Number of exam rooms busy', initial_size=0
-        )
+            name='Number of exam rooms busy', initial_size=0)
 
     def collect_patient_arrival(self, patient):
         """ collects statistics upon arrival of a patient
