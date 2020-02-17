@@ -122,4 +122,4 @@ class SimOutputs:
         :return: average patient waiting time
         """
 
-        return sum(self.patientTimeInWaitingRoom) / len(self.patientTimeInWaitingRoom)
+        return sum(self.patientTimeInWaitingRoom)/len(self.patientTimeInWaitingRoom)
