@@ -1,7 +1,6 @@
 import ModelEvents as E
 
 
-
 class Patient:
     def __init__(self, id):
         """ create a patient
@@ -17,14 +16,12 @@ class Patient:
 
 
 class WaitingRoom:
-    def __init__(self, sim_cal, sim_out, trace):
+    def __init__(self, sim_out, trace):
         """ create a waiting room
-        :param sim_cal: simulation calendar
         :param sim_out: simulation output
         :param trace: simulation trace
         """
         self.patientsWaiting = []   # list of patients in the waiting room
-        self.simCal = sim_cal       # simulation calendar
         self.simOut = sim_out       # simulation output
         self.trace = trace          # simulation trace
 
@@ -154,8 +151,7 @@ class UrgentCare:
         self.patients = []          # list of patients
 
         # waiting room
-        self.waitingRoom = WaitingRoom(sim_cal=self.simCal,
-                                       sim_out=self.simOutputs,
+        self.waitingRoom = WaitingRoom(sim_out=self.simOutputs,
                                        trace=self.trace)
         # exam rooms
         self.examRooms = []

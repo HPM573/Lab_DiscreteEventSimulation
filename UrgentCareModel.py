@@ -16,10 +16,36 @@ class UrgentCareModel:
         """
 
         self.id = id
-        self.params = parameters
+        self.params = parameters    # model parameters
+        self.rng = None             # random number generator
+        self.simCal = None          # simulation calendar
+        self.simOutputs = None      # simulation outputs
+        self.trace = None           # simulation trace
+        self.urgentCare = None      # urgent care
+
+    def simulate(self, sim_duration):
+        """ simulate the urgent care
+        :param sim_duration: duration of simulation (hours)
+         """
+
+        # initialize the simulation
+        self.__initialize()
+
+        # while there is an event scheduled in the simulation calendar
+        # and the simulation time is less than the simulation duration
+        while self.simCal.n_events() > 0 and self.simCal.time <= sim_duration:
+            self.simCal.get_next_event().process(rng=self.rng)
+
+        # collect the end of simulation statistics
+        self.simOutputs.collect_end_of_simulation()
+
+    def __initialize(self):
+        """
+        :return: initialize the simulation model
+        """
 
         # random number generator
-        self.rng = RVGs.RNG(seed=id)
+        self.rng = RVGs.RNG(seed=self.id)
 
         # simulation calendar
         self.simCal = SimCls.SimulationCalendar()
@@ -34,34 +60,17 @@ class UrgentCareModel:
                                                deci=D.DECI)
 
         # urgent care
-        self.urgentCare = M.UrgentCare(id=id, parameters=self.params,
-                                       sim_cal=self.simCal, sim_out=self.simOutputs)
-
-
-    def simulate(self, sim_duration):
-        """ simulate the urgent care
-        :param sim_duration: duration of simulation
-         """
-
-        # initialize the simulation
-        self.__initialize()
-
-        # while there is an event scheduled in the simulation calendar
-        # and the simulation time is less than the simulation duration
-        while self.simCal.n_events() > 0 and self.simCal.time <= sim_duration:
-            self.simCal.get_next_event().process()
-
-        # collect the end of simulation statistics
-        self.simOutputs.collect_end_of_simulation()
-
-    def __initialize(self):
-        """
-        :return: initialize the simulation model
-        """
+        self.urgentCare = M.UrgentCare(id=id,
+                                       parameters=self.params,
+                                       sim_cal=self.simCal,
+                                       sim_out=self.simOutputs,
+                                       trace=self.trace)
 
         # schedule the closing event
         self.simCal.add_event(
-            event=E.CloseUrgentCare(time=self.params.hoursOpen, urgent_care=self))
+            event=E.CloseUrgentCare(time=self.params.hoursOpen,
+                                    urgent_care=self.urgentCare)
+        )
 
         # find the arrival time of the first patient
         arrival_time = self.params.arrivalTimeDist.sample(rng=self.rng)
@@ -69,7 +78,9 @@ class UrgentCareModel:
         # schedule the arrival of the first patient
         self.simCal.add_event(
             event=E.Arrival(time=arrival_time,
-                            patient=M.Patient(id=0), urgent_care=self))
+                            patient=M.Patient(id=0),
+                            urgent_care=self.urgentCare)
+        )
 
     def print_trace(self):
         """ outputs trace """

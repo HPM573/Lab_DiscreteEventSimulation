@@ -10,7 +10,7 @@ class SimOutputs:
         :param trace_on: set to True to report patient summary
         """
 
-        self.simCal = sim_cal           # simulation calendar
+        self.simCal = sim_cal           # simulation calendar (to know the current time)
         self.traceOn = trace_on         # if should prepare patient summary report
         self.nPatientsArrived = 0       # number of patients arrived
         self.nPatientServed = 0         # number of patients served

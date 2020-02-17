@@ -28,11 +28,11 @@ class Arrival(Event):
         urgent_care.trace.add_message(
             str(patient) + ' will arrive at time {t:.{deci}f}.'.format(t=time, deci=D.DECI))
 
-    def process(self):
+    def process(self, rng=None):
         """ processes the arrival of a new patient """
 
         # receive the new patient
-        self.urgentCare.process_new_patient(patient=self.patient)
+        self.urgentCare.process_new_patient(patient=self.patient, rng=rng)
 
 
 class EndOfExam(Event):
@@ -53,11 +53,11 @@ class EndOfExam(Event):
         urgent_care.trace.add_message(
             str(exam_room) + ' will finish service at time {t:.{deci}f}.'.format(t=time, deci=D.DECI))
 
-    def process(self):
+    def process(self, rng=None):
         """ processes the end of service event """
 
         # process the end of service for this exam room
-        self.urgentCare.process_end_of_exam(exam_room=self.examRoom)
+        self.urgentCare.process_end_of_exam(exam_room=self.examRoom, rng=rng)
 
 
 class CloseUrgentCare(Event):
@@ -77,7 +77,7 @@ class CloseUrgentCare(Event):
         urgent_care.trace.add_message(
             'Urgent care will close at time {t:.{deci}f}.'.format(t=time, deci=D.DECI))
 
-    def process(self):
+    def process(self, rng=None):
         """ processes the closing event """
 
         # close the urgent care
