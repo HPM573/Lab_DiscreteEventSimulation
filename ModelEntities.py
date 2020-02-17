@@ -39,7 +39,7 @@ class WaitingRoom:
         """
 
         # update statistics for the patient who joins the waiting room
-        self.simOut.collect_patient_join_waiting_room(patient=patient)
+        self.simOut.collect_patient_joining_waiting_room(patient=patient)
 
         # add the patient to the list of patients waiting
         self.patientsWaiting.append(patient)
@@ -54,7 +54,7 @@ class WaitingRoom:
         """
 
         # update statistics for the patient who joins the waiting room
-        self.simOut.collect_patient_leave_waiting_room(patient=self.patientsWaiting[0])
+        self.simOut.collect_patient_leaving_waiting_room(patient=self.patientsWaiting[0])
 
         # trace
         self.trace.add_message(
@@ -108,7 +108,7 @@ class ExamRoom:
         self.trace.add_message(str(patient) + ' starts service in ' + str(self))
 
         # collect statistics
-        self.simOut.collect_start_exam()
+        self.simOut.collect_patient_starting_exam()
 
         # find the exam completion time (current time + service time)
         exam_completion_time = self.simCal.time + self.serviceTimeDist.sample(rng=rng)
@@ -204,7 +204,7 @@ class UrgentCare:
             self.simCal.get_next_event().process()
 
         # collect the end of simulation statistics
-        self.simOutputs.collect_end_of_sim_stat()
+        self.simOutputs.collect_end_of_simulation()
 
     def process_new_patient(self, patient):
         """ receives a new patient

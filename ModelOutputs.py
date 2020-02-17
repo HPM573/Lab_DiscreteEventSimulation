@@ -37,19 +37,18 @@ class SimOutputs:
     def collect_patient_arrival(self, patient):
         """ collects statistics upon arrival of a patient
         :param patient: the patient who just arrived
-        :param time: the arrival time
         """
 
         # increment the number of patients arrived
         self.nPatientsArrived += 1
 
-        # patients in the system
+        # update the sample path of patients in the system
         self.nPatientInSystem.record_increment(time=self.simCal.time, increment=+1)
 
         # store arrival time of this patient
         patient.tArrived = self.simCal.time
 
-    def collect_patient_join_waiting_room(self, patient):
+    def collect_patient_joining_waiting_room(self, patient):
         """ collects statistics when a patient joins the waiting room
         :param patient: the patient who is joining the waiting room
         """
@@ -57,10 +56,10 @@ class SimOutputs:
         # store the time this patient joined the waiting room
         patient.tJoinedWaitingRoom = self.simCal.time
 
-        # update the sample path
+        # update the sample path of patients waiting
         self.nPatientsWaiting.record_increment(time=self.simCal.time, increment=1)
 
-    def collect_patient_leave_waiting_room(self, patient):
+    def collect_patient_leaving_waiting_room(self, patient):
         """ collects statistics when a patient leave the waiting room
         :param patient: the patient who is leave the waiting room
         """
@@ -95,14 +94,14 @@ class SimOutputs:
                 time_in_system]      # time in the system
             )
 
-    def collect_start_exam(self):
+    def collect_patient_starting_exam(self):
         """ collects statistics for a patient who just started the exam """
 
         self.nExamRoomBusy.record_increment(time=self.simCal.time, increment=+1)
 
-    def collect_end_of_sim_stat(self):
+    def collect_end_of_simulation(self):
         """
-        collects the performance statistics at the end of this replication of the urgent care simulation
+        collects the performance statistics at the end of the simulation
         """
 
         # update sample paths
