@@ -43,7 +43,7 @@ Hist.plot_histogram(
 
 # performance statistics
 print('Patients arrived:', urgentCareModel.simOutputs.nPatientsArrived)
-print('Patients served:', urgentCareModel.simOutputs.nPatientServed)
+print('Patients served:', urgentCareModel.simOutputs.nPatientsServed)
 print('Average patient time in system:', urgentCareModel.simOutputs.get_ave_patient_time_in_system())
 print('Average patient waiting time:', urgentCareModel.simOutputs.get_ave_patient_waiting_time())
 
