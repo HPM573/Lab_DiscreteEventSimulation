@@ -22,8 +22,8 @@ class WaitingRoom:
         :param trace: simulation trace
         """
         self.patientsWaiting = []   # list of patients in the waiting room
-        self.simOut = sim_out       # simulation output
-        self.trace = trace          # simulation trace
+        self.simOut = sim_out
+        self.trace = trace
 
     def add_patient(self, patient):
         """ add a patient to the waiting room
@@ -45,7 +45,7 @@ class WaitingRoom:
         :returns: the next patient in line
         """
 
-        # update statistics for the patient who joins the waiting room
+        # update statistics for the patient who leaves the waiting room
         self.simOut.collect_patient_leaving_waiting_room(patient=self.patientsWaiting[0])
 
         # trace
@@ -107,7 +107,9 @@ class ExamRoom:
 
         # schedule the end of exam
         self.simCal.add_event(
-            E.EndOfExam(time=exam_completion_time, exam_room=self, urgent_care=self.urgentCare)
+            E.EndOfExam(time=exam_completion_time,
+                        exam_room=self,
+                        urgent_care=self.urgentCare)
         )
 
     def remove_patient(self):
@@ -241,5 +243,3 @@ class UrgentCare:
 
         # close the urgent care
         self.ifOpen = False
-
-
