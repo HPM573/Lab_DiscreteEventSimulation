@@ -3,7 +3,6 @@ import SimPy.RandomVariantGenerators as RVGs
 import SimPy.DiscreteEventSim as SimCls
 import SimPy.SimulationSupport as Sim
 import InputData as D
-import ModelOutputs as O
 import ModelEvents as E
 import ModelEntities as M
 
@@ -19,7 +18,6 @@ class UrgentCareModel:
         self.params = parameters    # model parameters
         self.rng = None             # random number generator
         self.simCal = None          # simulation calendar
-        self.simOutputs = None      # simulation outputs
         self.urgentCare = None      # urgent care
 
     def simulate(self, sim_duration):
@@ -35,9 +33,6 @@ class UrgentCareModel:
         while self.simCal.n_events() > 0 and self.simCal.time <= sim_duration:
             self.simCal.get_next_event().process(rng=self.rng)
 
-        # collect the end of simulation statistics
-        self.simOutputs.collect_end_of_simulation()
-
     def __initialize(self):
         """
         :return: initialize the simulation model
@@ -49,14 +44,10 @@ class UrgentCareModel:
         # simulation calendar
         self.simCal = SimCls.SimulationCalendar()
 
-        # simulation outputs
-        self.simOutputs = O.SimOutputs(sim_cal=self.simCal)
-
         # urgent care
         self.urgentCare = M.UrgentCare(id=id,
                                        parameters=self.params,
-                                       sim_cal=self.simCal,
-                                       sim_out=self.simOutputs)
+                                       sim_cal=self.simCal)
 
         # schedule the closing event
         self.simCal.add_event(
@@ -73,4 +64,3 @@ class UrgentCareModel:
                             patient=M.Patient(id=0),
                             urgent_care=self.urgentCare)
         )
-

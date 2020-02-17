@@ -7,29 +7,18 @@ class Patient:
         :param id: (integer) patient ID
         """
         self.id = id
-        self.tArrived = 0               # time the patient arrived
-        self.tJoinedWaitingRoom = 0     # time the patient joined the waiting room
-        self.tLeftWaitingRoom = 0       # time the patient left the waiting room
-
-    def __str__(self):
-        return "Patient " + str(self.id)
 
 
 class WaitingRoom:
-    def __init__(self, sim_out):
+    def __init__(self):
         """ create a waiting room
-        :param sim_out: simulation output
         """
         self.patientsWaiting = []   # list of patients in the waiting room
-        self.simOut = sim_out
 
     def add_patient(self, patient):
         """ add a patient to the waiting room
         :param patient: a patient to be added to the waiting room
         """
-
-        # update statistics for the patient who joins the waiting room
-        self.simOut.collect_patient_joining_waiting_room(patient=patient)
 
         # add the patient to the list of patients waiting
         self.patientsWaiting.append(patient)
@@ -38,9 +27,6 @@ class WaitingRoom:
         """
         :returns: the next patient in line
         """
-
-        # update statistics for the patient who leaves the waiting room
-        self.simOut.collect_patient_leaving_waiting_room(patient=self.patientsWaiting[0])
 
         # pop the patient
         return self.patientsWaiting.pop(0)
@@ -53,25 +39,19 @@ class WaitingRoom:
 
 
 class ExamRoom:
-    def __init__(self, id, service_time_dist, urgent_care, sim_cal, sim_out):
+    def __init__(self, id, service_time_dist, urgent_care, sim_cal):
         """ create an exam room
         :param id: (integer) the exam room ID
         :param service_time_dist: distribution of service time in this exam room
         :param urgent_care: urgent care
         :param sim_cal: simulation calendar
-        :param sim_out: simulation output
         """
         self.id = id
         self.serviceTimeDist = service_time_dist
         self.urgentCare = urgent_care
         self.simCal = sim_cal
-        self.simOut = sim_out
         self.isBusy = False
         self.patientBeingServed = None  # the patient who is being served
-
-    def __str__(self):
-        """ :returns (string) the exam room number """
-        return "Exam Room " + str(self.id)
 
     def exam(self, patient, rng):
         """ starts examining on the patient
@@ -82,9 +62,6 @@ class ExamRoom:
         # the exam room is busy
         self.patientBeingServed = patient
         self.isBusy = True
-
-        # collect statistics
-        self.simOut.collect_patient_starting_exam()
 
         # find the exam completion time (current time + service time)
         exam_completion_time = self.simCal.time + self.serviceTimeDist.sample(rng=rng)
@@ -106,25 +83,22 @@ class ExamRoom:
         # the exam room is idle now
         self.isBusy = False
 
-        # collect statistics
-        self.simOut.collect_patient_departure(patient=returned_patient)
-
         return returned_patient
 
 
 class UrgentCare:
-    def __init__(self, id, parameters, sim_cal, sim_out):
+    def __init__(self, id, parameters, sim_cal):
         """ creates an urgent care
         :param id: ID of this urgent care
         :param parameters: parameters of this urgent care
         :param sim_cal: simulation calendar
-        :param sim_out: simulation output
         """
 
         self.id = id
         self.params = parameters
         self.simCal = sim_cal
-        self.simOutputs = sim_out
+        self.nPatientsArrived = 0   # number of patients arrived
+        self.nPatientsServed = 0     # number of patients served
 
         self.ifOpen = True  # if the urgent care is open and admitting new patients
 
@@ -132,15 +106,15 @@ class UrgentCare:
         self.patients = []          # list of patients
 
         # waiting room
-        self.waitingRoom = WaitingRoom(sim_out=self.simOutputs)
+        self.waitingRoom = WaitingRoom()
+
         # exam rooms
         self.examRooms = []
         for i in range(0, self.params.nExamRooms):
             self.examRooms.append(ExamRoom(id=i,
                                            service_time_dist=self.params.examTimeDist,
                                            urgent_care=self,
-                                           sim_cal=self.simCal,
-                                           sim_out=self.simOutputs))
+                                           sim_cal=self.simCal))
 
     def process_new_patient(self, patient, rng):
         """ receives a new patient
@@ -152,11 +126,11 @@ class UrgentCare:
         if not self.ifOpen:
             return
 
+        # update number of patients arrived
+        self.nPatientsArrived += 1
+
         # add the new patient to the list of patients
         self.patients.append(patient)
-
-        # collect statistics on new patient
-        self.simOutputs.collect_patient_arrival(patient=patient)
 
         # find an idle exam room
         idle_room_found = False
@@ -197,6 +171,9 @@ class UrgentCare:
 
         # remove the discharged patient from the list of patients
         self.patients.remove(discharged_patient)
+
+        # update the number of patients served
+        self.nPatientsServed += 1
 
         # check if there is any patient waiting
         if self.waitingRoom.get_num_patients_waiting() > 0:
