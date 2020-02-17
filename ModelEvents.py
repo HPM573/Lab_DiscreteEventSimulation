@@ -24,10 +24,6 @@ class Arrival(Event):
         self.patient = patient
         self.urgentCare = urgent_care
 
-        # trace
-        urgent_care.trace.add_message(
-            str(patient) + ' will arrive at time {t:.{deci}f}.'.format(t=time, deci=D.DECI))
-
     def process(self, rng=None):
         """ processes the arrival of a new patient """
 
@@ -49,10 +45,6 @@ class EndOfExam(Event):
         self.examRoom = exam_room
         self.urgentCare = urgent_care
 
-        # trace
-        urgent_care.trace.add_message(
-            str(exam_room) + ' will finish service at time {t:.{deci}f}.'.format(t=time, deci=D.DECI))
-
     def process(self, rng=None):
         """ processes the end of service event """
 
@@ -72,10 +64,6 @@ class CloseUrgentCare(Event):
 
         # call the master class initialization
         Event.__init__(self, time=time, priority=Priority.CLOSE.value)
-
-        # trace
-        urgent_care.trace.add_message(
-            'Urgent care will close at time {t:.{deci}f}.'.format(t=time, deci=D.DECI))
 
     def process(self, rng=None):
         """ processes the closing event """

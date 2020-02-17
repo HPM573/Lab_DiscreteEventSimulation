@@ -52,6 +52,3 @@ print('Average number of patients in the waiting room:', urgentCareModel.simOutp
 print('Average number of patients in the system:', urgentCareModel.simOutputs.nPatientInSystem.stat.get_mean())
 print('Average utilization of exam rooms (%):',
       100*urgentCareModel.simOutputs.nExamRoomBusy.stat.get_mean()/D.N_EXAM_ROOMS)
-
-# print trace
-urgentCareModel.print_trace()

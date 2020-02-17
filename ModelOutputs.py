@@ -4,23 +4,16 @@ import SimPy.SamplePathClasses as Path
 class SimOutputs:
     # to collect the outputs of a simulation run
 
-    def __init__(self, sim_cal, trace_on=False):
+    def __init__(self, sim_cal):
         """
         :param sim_cal: simulation calendar
-        :param trace_on: set to True to report patient summary
         """
 
         self.simCal = sim_cal           # simulation calendar (to know the current time)
-        self.traceOn = trace_on         # if should prepare patient summary report
         self.nPatientsArrived = 0       # number of patients arrived
         self.nPatientServed = 0         # number of patients served
         self.patientTimeInSystem = []   # observations on patients time in urgent care
         self.patientTimeInWaitingRoom = []  # observations on patients time in the waiting room
-
-        self.patientSummary = []    # id, tArrived, tLeft, duration waited, duration in the system
-        if self.traceOn:
-            self.patientSummary.append(
-                ['Patient', 'Time Arrived', 'Time Left', 'Time Waited', 'Time In the System'])
 
         # sample path for the patients waiting
         self.nPatientsWaiting = Path.PrevalenceSamplePath(
@@ -84,16 +77,6 @@ class SimOutputs:
         self.nExamRoomBusy.record_increment(time=self.simCal.time, increment=-1)
         self.patientTimeInWaitingRoom.append(time_waiting)
         self.patientTimeInSystem.append(time_in_system)
-
-        # build the patient summary
-        if self.traceOn:
-            self.patientSummary.append([
-                str(patient),        # name
-                patient.tArrived,    # time arrived
-                self.simCal.time,    # time left
-                time_waiting,        # time waiting
-                time_in_system]      # time in the system
-            )
 
     def collect_patient_starting_exam(self):
         """ collects statistics for a patient who just started the exam """

@@ -20,7 +20,6 @@ class UrgentCareModel:
         self.rng = None             # random number generator
         self.simCal = None          # simulation calendar
         self.simOutputs = None      # simulation outputs
-        self.trace = None           # simulation trace
         self.urgentCare = None      # urgent care
 
     def simulate(self, sim_duration):
@@ -51,20 +50,13 @@ class UrgentCareModel:
         self.simCal = SimCls.SimulationCalendar()
 
         # simulation outputs
-        self.simOutputs = O.SimOutputs(sim_cal=self.simCal,
-                                       trace_on=D.TRACE_ON)
-
-        # simulation trace
-        self.trace = Sim.DiscreteEventSimTrace(sim_calendar=self.simCal,
-                                               if_should_trace=D.TRACE_ON,
-                                               deci=D.DECI)
+        self.simOutputs = O.SimOutputs(sim_cal=self.simCal)
 
         # urgent care
         self.urgentCare = M.UrgentCare(id=id,
                                        parameters=self.params,
                                        sim_cal=self.simCal,
-                                       sim_out=self.simOutputs,
-                                       trace=self.trace)
+                                       sim_out=self.simOutputs)
 
         # schedule the closing event
         self.simCal.add_event(
@@ -82,15 +74,3 @@ class UrgentCareModel:
                             urgent_care=self.urgentCare)
         )
 
-    def print_trace(self):
-        """ outputs trace """
-
-        # simulation trace
-        self.trace.print_trace(filename='Trace-Replication' + str(self.id) + '.txt',
-                               directory='Trace',
-                               delete_existing_files=True)
-        # patient summary
-        IO.write_csv(file_name='Patients-Replication' + str(self.id) + '.txt',
-                     rows=self.simOutputs.patientSummary,
-                     directory='Patients Summary',
-                     delete_existing_files=True)
