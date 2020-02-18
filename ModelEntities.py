@@ -21,7 +21,6 @@ class WaitingRoom:
         """
 
         # add the patient to the list of patients waiting
-        self.patientsWaiting.append(patient)
 
     def get_next_patient(self):
         """
@@ -29,7 +28,6 @@ class WaitingRoom:
         """
 
         # pop the patient
-        return self.patientsWaiting.pop(0)
 
     def get_num_patients_waiting(self):
         """
@@ -60,30 +58,17 @@ class ExamRoom:
         """
 
         # the exam room is busy
-        self.patientBeingServed = patient
-        self.isBusy = True
 
         # find the exam completion time (current time + service time)
-        exam_completion_time = self.simCal.time + self.serviceTimeDist.sample(rng=rng)
 
         # schedule the end of exam
-        self.simCal.add_event(
-            E.EndOfExam(time=exam_completion_time,
-                        exam_room=self,
-                        urgent_care=self.urgentCare)
-        )
 
     def remove_patient(self):
         """ :returns the patient that was being served in this exam room"""
 
         # store the patient to be returned and set the patient that was being served to None
-        returned_patient = self.patientBeingServed
-        self.patientBeingServed = None
 
         # the exam room is idle now
-        self.isBusy = False
-
-        return returned_patient
 
 
 class UrgentCare:
@@ -106,15 +91,8 @@ class UrgentCare:
         self.patients = []          # list of patients
 
         # waiting room
-        self.waitingRoom = WaitingRoom()
 
         # exam rooms
-        self.examRooms = []
-        for i in range(0, self.params.nExamRooms):
-            self.examRooms.append(ExamRoom(id=i,
-                                           service_time_dist=self.params.examTimeDist,
-                                           urgent_care=self,
-                                           sim_cal=self.simCal))
 
     def process_new_patient(self, patient, rng):
         """ receives a new patient
@@ -122,43 +100,7 @@ class UrgentCare:
         :param rng: random number generator
         """
 
-        # do not admit the patient if the urgent care is closed
-        if not self.ifOpen:
-            return
 
-        # update number of patients arrived
-        self.nPatientsArrived += 1
-
-        # add the new patient to the list of patients
-        self.patients.append(patient)
-
-        # find an idle exam room
-        idle_room_found = False
-        for room in self.examRooms:
-            # if this room is busy
-            if not room.isBusy:
-                # send the last patient to this exam room
-                room.exam(patient=patient, rng=rng)
-                idle_room_found = True
-                # break the for loop
-                break
-
-        # if no idle room was found
-        if not idle_room_found:
-            # add the patient to the waiting room
-            self.waitingRoom.add_patient(patient=patient)
-
-        # find the arrival time of the next patient (current time + time until next arrival)
-        next_arrival_time = self.simCal.time + self.params.arrivalTimeDist.sample(rng=rng)
-
-        # schedule the arrival of the next patient
-        self.simCal.add_event(
-            event=E.Arrival(
-                time=next_arrival_time,
-                patient=Patient(id=patient.id + 1),  # id of the next patient = this patient's id + 1
-                urgent_care=self
-            )
-        )
 
     def process_end_of_exam(self, exam_room, rng):
         """ processes the end of exam in the specified exam room
@@ -166,23 +108,9 @@ class UrgentCare:
         :param rng: random number generator
         """
 
-        # get the patient who is about to be discharged
-        discharged_patient = exam_room.remove_patient()
 
-        # remove the discharged patient from the list of patients
-        self.patients.remove(discharged_patient)
-
-        # update the number of patients served
-        self.nPatientsServed += 1
-
-        # check if there is any patient waiting
-        if self.waitingRoom.get_num_patients_waiting() > 0:
-
-            # start serving the next patient in line
-            exam_room.exam(patient=self.waitingRoom.get_next_patient(), rng=rng)
 
     def process_close_urgent_care(self):
         """ process the closing of the urgent care """
 
         # close the urgent care
-        self.ifOpen = False

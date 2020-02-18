@@ -36,28 +36,13 @@ class UrgentCareModel:
         """
 
         # random number generator
-        self.rng = RVGs.RNG(seed=self.id)
 
         # simulation calendar
-        self.simCal = SimCls.SimulationCalendar()
 
         # urgent care
-        self.urgentCare = M.UrgentCare(id=id,
-                                       parameters=self.params,
-                                       sim_cal=self.simCal)
 
         # schedule the closing event
-        self.simCal.add_event(
-            event=E.CloseUrgentCare(time=self.params.hoursOpen,
-                                    urgent_care=self.urgentCare)
-        )
 
         # find the arrival time of the first patient
-        arrival_time = self.params.arrivalTimeDist.sample(rng=self.rng)
 
         # schedule the arrival of the first patient
-        self.simCal.add_event(
-            event=E.Arrival(time=arrival_time,
-                            patient=M.Patient(id=0),
-                            urgent_care=self.urgentCare)
-        )
