@@ -1,5 +1,4 @@
 from enum import Enum
-import InputData as D
 from SimPy.DiscreteEventSim import SimulationEvent as Event
 
 
