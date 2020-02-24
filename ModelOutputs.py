@@ -1,4 +1,6 @@
 import SimPy.SamplePathClasses as Path
+import SimPy.FormatFunctions as F
+import InputData as D
 
 
 class SimOutputs:
@@ -92,11 +94,11 @@ class SimOutputs:
         # build the patient summary
         if self.traceOn:
             self.patientSummary.append([
-                str(patient),        # name
-                patient.tArrived,    # time arrived
-                self.simCal.time,    # time left
-                time_waiting,        # time waiting
-                time_in_system]      # time in the system
+                str(patient),  # name
+                F.format_number(patient.tArrived, deci=D.DECI),  # time arrived
+                F.format_number(self.simCal.time, deci=D.DECI),  # time left
+                F.format_number(time_waiting, deci=D.DECI),  # time waiting
+                F.format_number(time_in_system, deci=D.DECI)]  # time in the system
             )
 
     def collect_patient_starting_exam(self):
