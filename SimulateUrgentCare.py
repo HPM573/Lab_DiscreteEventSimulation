@@ -32,13 +32,13 @@ Hist.plot_histogram(
     data=urgentCareModel.simOutputs.patientTimeInSystem,
     title='Patients Time in System',
     x_label='Hours',
-    bin_width=.2
+    #bin_width=.2
 )
 Hist.plot_histogram(
     data=urgentCareModel.simOutputs.patientTimeInWaitingRoom,
     title='Patients Time in Waiting Room',
     x_label='Hours',
-    bin_width=0.2
+    #bin_width=0.2
 )
 
 # performance statistics
