@@ -132,21 +132,26 @@ class UrgentCare:
         # add the new patient to the list of patients
         self.patients.append(patient)
 
-        # find an idle exam room
-        idle_room_found = False
-        for room in self.examRooms:
-            # if this room is busy
-            if not room.isBusy:
-                # send the last patient to this exam room
-                room.exam(patient=patient, rng=rng)
-                idle_room_found = True
-                # break the for loop
-                break
-
-        # if no idle room was found
-        if not idle_room_found:
-            # add the patient to the waiting room
+        # check if anyone is waiting
+        if self.waitingRoom.get_num_patients_waiting() > 0:
+            # if anyone is waiting, add the patient to the waiting room
             self.waitingRoom.add_patient(patient=patient)
+        else:
+            # find an idle exam room
+            idle_room_found = False
+            for room in self.examRooms:
+                # if this room is busy
+                if not room.isBusy:
+                    # send the last patient to this exam room
+                    room.exam(patient=patient, rng=rng)
+                    idle_room_found = True
+                    # break the for loop
+                    break
+
+            # if no idle room was found
+            if not idle_room_found:
+                # add the patient to the waiting room
+                self.waitingRoom.add_patient(patient=patient)
 
         # find the arrival time of the next patient (current time + time until next arrival)
         next_arrival_time = self.simCal.time + self.params.arrivalTimeDist.sample(rng=rng)
