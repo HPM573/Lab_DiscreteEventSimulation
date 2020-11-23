@@ -1,4 +1,4 @@
-import SimPy.RandomVariantGenerators as RVGs
+import SimPy.RandomVariateGenerators as RVGs
 import SimPy.DiscreteEventSim as SimCls
 import ModelEvents as E
 import ModelEntities as M

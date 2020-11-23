@@ -1,5 +1,5 @@
 import InputData as D
-import SimPy.RandomVariantGenerators as RVGs
+import SimPy.RandomVariateGenerators as RVGs
 
 
 class Parameters:
