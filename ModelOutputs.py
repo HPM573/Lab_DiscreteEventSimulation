@@ -1,4 +1,4 @@
-import SimPy.SamplePathClasses as Path
+import SimPy.SamplePath as Path
 import SimPy.FormatFunctions as F
 import InputData as D
 
@@ -80,8 +80,8 @@ class SimOutputs:
         :param patient: the departing patient
         """
 
-        time_waiting = patient.tLeftWaitingRoom-patient.tJoinedWaitingRoom
-        time_in_system = self.simCal.time-patient.tArrived
+        time_waiting = patient.tLeftWaitingRoom - patient.tJoinedWaitingRoom
+        time_in_system = self.simCal.time - patient.tArrived
 
         self.nPatientInSystem.record_increment(time=self.simCal.time, increment=-1)
         self.nExamRoomBusy.record_increment(time=self.simCal.time, increment=-1)

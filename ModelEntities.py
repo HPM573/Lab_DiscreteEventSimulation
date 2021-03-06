@@ -1,4 +1,4 @@
-import ModelEvents as E
+from ModelEvents import Arrival, EndOfExam
 
 
 class Patient:
@@ -107,9 +107,9 @@ class ExamRoom:
 
         # schedule the end of exam
         self.simCal.add_event(
-            E.EndOfExam(time=exam_completion_time,
-                        exam_room=self,
-                        urgent_care=self.urgentCare)
+            EndOfExam(time=exam_completion_time,
+                      exam_room=self,
+                      urgent_care=self.urgentCare)
         )
 
     def remove_patient(self):
@@ -212,7 +212,7 @@ class UrgentCare:
 
         # schedule the arrival of the next patient
         self.simCal.add_event(
-            event=E.Arrival(
+            event=Arrival(
                 time=next_arrival_time,
                 patient=Patient(id=patient.id + 1),  # id of the next patient = this patient's id + 1
                 urgent_care=self

@@ -9,5 +9,5 @@ SIM_DURATION = 100000   # (hours) a large number to make sure the simulation wil
 HOURS_OPEN = 30*24                 # hours the urgent cares open
 WARM_UP = 5*24                  # warm up period
 N_EXAM_ROOMS = 20                # number of exam rooms
-MEAN_ARRIVAL_TIME = 20/60/20        # mean patients inter-arrival time (hours)
-MEAN_EXAM_DURATION = 20/60       # mean of exam duration (hours)
+MEAN_ARRIVAL_TIME = 1/3/20        # mean patients inter-arrival time (hours)
+MEAN_EXAM_DURATION = 1/3       # mean of exam duration (hours)
