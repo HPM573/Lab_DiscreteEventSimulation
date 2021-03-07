@@ -36,8 +36,8 @@ class UrgentCareModel:
             self.simCal.get_next_event().process(rng=rng)
 
     def __initialize(self, rng):
-        """
-        :return: initialize the simulation model
+        """ initialize the simulation model
+        :param rng: random number generator
         """
 
         # simulation calendar
