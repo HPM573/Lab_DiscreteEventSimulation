@@ -1,4 +1,4 @@
-import ModelEvents as E
+from ModelEvents import Arrival, EndOfExam
 
 
 class Patient:

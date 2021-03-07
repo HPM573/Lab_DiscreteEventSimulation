@@ -1,9 +1,11 @@
 from enum import Enum
+import InputData as D
 from SimPy.DiscreteEventSim import SimulationEvent as Event
 
 
 class Priority(Enum):
-    """ priority of urgent care simulation events (low number implies higher priority)"""
+    """ priority for processing the urgent care simulation events
+    if they are to occur at the exact same time (low number implies higher priority)"""
     ARRIVAL = 1
     END_OF_EXAM = 0
     CLOSE = 2

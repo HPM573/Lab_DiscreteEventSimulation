@@ -1,7 +1,7 @@
-import SimPy.RandomVariantGenerators as RVGs
 import SimPy.DiscreteEventSim as SimCls
 import ModelEvents as E
 import ModelEntities as M
+import numpy as np
 
 
 class UrgentCareModel:
