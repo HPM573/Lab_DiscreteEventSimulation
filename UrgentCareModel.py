@@ -13,7 +13,6 @@ class UrgentCareModel:
 
         self.id = id
         self.params = parameters    # model parameters
-        self.rng = None             # random number generator
         self.simCal = None          # simulation calendar
         self.urgentCare = None      # urgent care
 
@@ -22,17 +21,20 @@ class UrgentCareModel:
         :param sim_duration: duration of simulation (hours)
          """
 
+        # random number generator
+        rng = np.random.RandomState(seed=self.id)
+
         # initialize the simulation
-        self.__initialize()
+        self.__initialize(rng=rng)
 
         # while there is an event scheduled in the simulation calendar
         # and the simulation time is less than the simulation duration
         while self.simCal.n_events() > 0 and self.simCal.time <= sim_duration:
-            self.simCal.get_next_event().process(rng=self.rng)
+            self.simCal.get_next_event().process(rng=rng)
 
-    def __initialize(self):
-        """
-        :return: initialize the simulation model
+    def __initialize(self, rng):
+        """ initialize the simulation model
+        :param rng: random number generator
         """
 
         # random number generator
