@@ -42,9 +42,8 @@ class UrgentCareModel:
         self.simOutputs.collect_end_of_simulation()
 
     def __initialize(self, rng):
-        """
+        """ initialize the simulation model
         :param rng: random number generator
-        :return: initialize the simulation model
         """
 
         # simulation calendar
