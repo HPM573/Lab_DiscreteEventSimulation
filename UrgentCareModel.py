@@ -37,8 +37,6 @@ class UrgentCareModel:
         :param rng: random number generator
         """
 
-        # random number generator
-
         # simulation calendar
 
         # urgent care

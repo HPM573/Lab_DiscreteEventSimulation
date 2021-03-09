@@ -7,5 +7,5 @@ class Parameters:
     def __init__(self):
         self.hoursOpen = D.HOURS_OPEN
         self.nExamRooms = D.N_EXAM_ROOMS
-        self.arrivalTimeDist = RVGs.Exponential(scale=D.MEAN_ARRIVAL_TIME)
-        self.examTimeDist = RVGs.Exponential(scale=D.MEAN_EXAM_DURATION)
+        self.arrivalTimeDist =
+        self.examTimeDist =
