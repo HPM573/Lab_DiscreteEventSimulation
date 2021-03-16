@@ -44,7 +44,7 @@ class UrgentCareModel:
         self.simCal = SimCls.SimulationCalendar()
 
         # urgent care
-        self.urgentCare = M.UrgentCare(id=id,
+        self.urgentCare = M.UrgentCare(id=0,
                                        parameters=self.params,
                                        sim_cal=self.simCal)
 

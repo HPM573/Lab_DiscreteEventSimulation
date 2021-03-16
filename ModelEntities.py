@@ -110,7 +110,7 @@ class UrgentCare:
 
         # exam rooms
         self.examRooms = []
-        for i in range(0, self.params.nExamRooms):
+        for i in range(self.params.nExamRooms):
             self.examRooms.append(ExamRoom(id=i,
                                            service_time_dist=self.params.examTimeDist,
                                            urgent_care=self,
