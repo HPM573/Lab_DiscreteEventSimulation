@@ -60,7 +60,7 @@ class UrgentCareModel:
                                                deci=D.DECI)
 
         # urgent care
-        self.urgentCare = M.UrgentCare(id=id,
+        self.urgentCare = M.UrgentCare(id=0,
                                        parameters=self.params,
                                        sim_cal=self.simCal,
                                        sim_out=self.simOutputs,
