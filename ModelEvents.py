@@ -16,7 +16,7 @@ class Arrival(Event):
         :param patient: next patient
         :param urgent_care: the urgent care
         """
-        # initialize the master class
+        # initialize the base class
         Event.__init__(self, time=time, priority=ARRIVAL)
 
         self.patient = patient
