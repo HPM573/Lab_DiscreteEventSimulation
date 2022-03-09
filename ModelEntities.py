@@ -7,9 +7,9 @@ class Patient:
         :param id: (integer) patient ID
         """
         self.id = id
-        self.tArrived = 0               # time the patient arrived
-        self.tJoinedWaitingRoom = 0     # time the patient joined the waiting room
-        self.tLeftWaitingRoom = 0       # time the patient left the waiting room
+        self.tArrived = None               # time the patient arrived
+        self.tJoinedWaitingRoom = None     # time the patient joined the waiting room
+        self.tLeftWaitingRoom = None       # time the patient left the waiting room
 
     def __str__(self):
         return "Patient " + str(self.id)

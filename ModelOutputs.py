@@ -80,7 +80,12 @@ class SimOutputs:
         :param patient: the departing patient
         """
 
-        time_waiting = patient.tLeftWaitingRoom - patient.tJoinedWaitingRoom
+        # if patient never joined the waiting room, the waiting time is 0
+        if patient.tJoinedWaitingRoom is None:
+            time_waiting = 0
+        else:
+            time_waiting = patient.tLeftWaitingRoom - patient.tJoinedWaitingRoom
+
         time_in_system = self.simCal.time - patient.tArrived
 
         self.nPatientInSystem.record_increment(time=self.simCal.time, increment=-1)
