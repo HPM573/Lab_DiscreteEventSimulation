@@ -63,11 +63,11 @@ class WaitingRoom:
         return len(self.patientsWaiting)
 
 
-class ExamRoom:
+class Physician:
     def __init__(self, id, service_time_dist, urgent_care, sim_cal, sim_out, trace):
-        """ create an exam room
-        :param id: (integer) the exam room ID
-        :param service_time_dist: distribution of service time in this exam room
+        """ create a physician
+        :param id: (integer) the physician
+        :param service_time_dist: distribution of service time
         :param urgent_care: urgent care
         :param sim_cal: simulation calendar
         :param sim_out: simulation output
@@ -83,16 +83,16 @@ class ExamRoom:
         self.patientBeingServed = None  # the patient who is being served
 
     def __str__(self):
-        """ :returns (string) the exam room number """
-        return "Exam Room " + str(self.id)
+        """ :returns (string) the physician id """
+        return "Physician " + str(self.id)
 
     def exam(self, patient, rng):
-        """ starts examining on the patient
+        """ starts examining the patient
         :param patient: a patient
         :param rng: random number generator
         """
 
-        # the exam room is busy
+        # the physician is busy
         self.patientBeingServed = patient
         self.isBusy = True
 
@@ -113,22 +113,19 @@ class ExamRoom:
         )
 
     def remove_patient(self):
-        """ returns the patient that was being served in this exam room"""
+        """ returns the patient that was being served """
 
-        # store the patient to be returned and set the patient that was being served to None
-        returned_patient = self.patientBeingServed
-        self.patientBeingServed = None
-
-        # the exam room is idle now
+        # the physician is idle now
         self.isBusy = False
 
         # collect statistics
-        self.simOut.collect_patient_departure(patient=returned_patient)
+        self.simOut.collect_patient_departure(patient=self.patientBeingServed)
 
         # trace
-        self.trace.add_message(str(returned_patient) + ' leaves ' + str(self) + '.')
+        self.trace.add_message(str(self.patientBeingServed) + ' leaves ' + str(self) + '.')
 
-        return returned_patient
+        # remove the patient
+        self.patientBeingServed = None
 
 
 class UrgentCare:
@@ -149,21 +146,18 @@ class UrgentCare:
 
         self.ifOpen = True  # if the urgent care is open and admitting new patients
 
-        # model entities
-        self.patients = []          # list of patients
-
         # waiting room
         self.waitingRoom = WaitingRoom(sim_out=self.simOutputs,
                                        trace=self.trace)
-        # exam rooms
-        self.examRooms = []
-        for i in range(self.params.nExamRooms):
-            self.examRooms.append(ExamRoom(id=i,
-                                           service_time_dist=self.params.examTimeDist,
-                                           urgent_care=self,
-                                           sim_cal=self.simCal,
-                                           sim_out=self.simOutputs,
-                                           trace=self.trace))
+        # physicians
+        self.physicians = []
+        for i in range(self.params.nPhysicians):
+            self.physicians.append(Physician(id=i,
+                                             service_time_dist=self.params.examTimeDist,
+                                             urgent_care=self,
+                                             sim_cal=self.simCal,
+                                             sim_out=self.simOutputs,
+                                             trace=self.trace))
 
     def process_new_patient(self, patient, rng):
         """ receives a new patient
@@ -180,9 +174,6 @@ class UrgentCare:
             self.trace.add_message('Urgent care is closed. '+str(patient)+' does not get admitted.')
             return
 
-        # add the new patient to the list of patients
-        self.patients.append(patient)
-
         # collect statistics on new patient
         self.simOutputs.collect_patient_arrival(patient=patient)
 
@@ -191,19 +182,19 @@ class UrgentCare:
             # if anyone is waiting, add the patient to the waiting room
             self.waitingRoom.add_patient(patient=patient)
         else:
-            # find an idle exam room
-            idle_room_found = False
-            for room in self.examRooms:
-                # if this room is busy
-                if not room.isBusy:
-                    # send the last patient to this exam room
-                    room.exam(patient=patient, rng=rng)
-                    idle_room_found = True
+            # find an idle physician
+            idle_physician_found = False
+            for physician in self.physicians:
+                # if this physician idle
+                if not physician.isBusy:
+                    # send the last patient to this physician
+                    physician.exam(patient=patient, rng=rng)
+                    idle_physician_found = True
                     # break the for loop
                     break
 
-            # if no idle room was found
-            if not idle_room_found:
+            # if no idle physician was found
+            if not idle_physician_found:
                 # add the patient to the waiting room
                 self.waitingRoom.add_patient(patient=patient)
 
@@ -219,26 +210,23 @@ class UrgentCare:
             )
         )
 
-    def process_end_of_exam(self, exam_room, rng):
-        """ processes the end of exam in the specified exam room
-        :param exam_room: the exam room where the service is ended
+    def process_end_of_exam(self, physician, rng):
+        """ processes the end of exam for this physician
+        :param physician: the physician that finished the exam
         :param rng: random number generator
         """
 
         # trace
-        self.trace.add_message('Processing end of exam in ' + str(exam_room) + '.')
+        self.trace.add_message('Processing end of exam in ' + str(physician) + '.')
 
-        # get the patient who is about to be discharged
-        discharged_patient = exam_room.remove_patient()
-
-        # remove the discharged patient from the list of patients
-        self.patients.remove(discharged_patient)
+        # remove the patient
+        physician.remove_patient()
 
         # check if there is any patient waiting
         if self.waitingRoom.get_num_patients_waiting() > 0:
 
             # start serving the next patient in line
-            exam_room.exam(patient=self.waitingRoom.get_next_patient(), rng=rng)
+            physician.exam(patient=self.waitingRoom.get_next_patient(), rng=rng)
 
     def process_close_urgent_care(self):
         """ process the closing of the urgent care """

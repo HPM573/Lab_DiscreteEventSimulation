@@ -35,9 +35,9 @@ class SimOutputs:
         self.nPatientInSystem = PrevalenceSamplePath(
             name='Number of patients in the urgent care', initial_size=0, warm_up_period=warm_up_period)
 
-        # sample path for the number of exam rooms busy
-        self.nExamRoomBusy = PrevalenceSamplePath(
-            name='Number of exam rooms busy', initial_size=0, warm_up_period=warm_up_period)
+        # sample path for the number of physicians busy
+        self.nPhysiciansBusy = PrevalenceSamplePath(
+            name='Number of physicians busy', initial_size=0, warm_up_period=warm_up_period)
 
     def collect_patient_arrival(self, patient):
         """ collects statistics upon arrival of a patient
@@ -90,7 +90,7 @@ class SimOutputs:
         time_in_system = self.simCal.time - patient.tArrived
 
         self.nPatientInSystem.record_increment(time=self.simCal.time, increment=-1)
-        self.nExamRoomBusy.record_increment(time=self.simCal.time, increment=-1)
+        self.nPhysiciansBusy.record_increment(time=self.simCal.time, increment=-1)
 
         if self.simCal.time > self.warmUpPeriod:
             self.nPatientsServed += 1
@@ -110,7 +110,7 @@ class SimOutputs:
     def collect_patient_starting_exam(self):
         """ collects statistics for a patient who just started the exam """
 
-        self.nExamRoomBusy.record_increment(time=self.simCal.time, increment=+1)
+        self.nPhysiciansBusy.record_increment(time=self.simCal.time, increment=+1)
 
     def collect_end_of_simulation(self):
         """
@@ -120,7 +120,7 @@ class SimOutputs:
         # update sample paths
         self.nPatientsWaiting.close(time=self.simCal.time)
         self.nPatientInSystem.close(time=self.simCal.time)
-        self.nExamRoomBusy.close(time=self.simCal.time)
+        self.nPhysiciansBusy.close(time=self.simCal.time)
 
     def get_ave_patient_time_in_system(self):
         """

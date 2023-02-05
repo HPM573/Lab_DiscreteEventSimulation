@@ -25,7 +25,7 @@ path.plot_sample_path(
 )
 # sample path for exam rooms busy
 path.plot_sample_path(
-    sample_path=urgentCareModel.simOutputs.nExamRoomBusy,
+    sample_path=urgentCareModel.simOutputs.nPhysiciansBusy,
     title='Exam Rooms Busy',
     x_label='Simulation time (hours)'
 )
@@ -52,7 +52,7 @@ print('Maximum number of patients in the waiting room:', urgentCareModel.simOutp
 print('Average number of patients in the waiting room:', urgentCareModel.simOutputs.nPatientsWaiting.stat.get_mean())
 print('Average number of patients in the system:', urgentCareModel.simOutputs.nPatientInSystem.stat.get_mean())
 print('Average utilization of exam rooms (%):',
-      100*urgentCareModel.simOutputs.nExamRoomBusy.stat.get_mean()/D.N_EXAM_ROOMS)
+      100 * urgentCareModel.simOutputs.nPhysiciansBusy.stat.get_mean() / D.N_PHYSICIANS)
 
 # print trace
 urgentCareModel.print_trace()
