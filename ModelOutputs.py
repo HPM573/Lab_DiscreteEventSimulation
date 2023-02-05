@@ -1,6 +1,7 @@
-import SimPy.SamplePath as Path
-import SimPy.FormatFunctions as F
-import InputData as D
+from deampy.format_functions import format_number
+from deampy.sample_path import PrevalenceSamplePath
+
+import DESInputData as D
 
 
 class SimOutputs:
@@ -27,15 +28,15 @@ class SimOutputs:
                 ['Patient', 'Time Arrived', 'Time Left', 'Time Waited', 'Time In the System'])
 
         # sample path for the patients waiting
-        self.nPatientsWaiting = Path.PrevalenceSamplePath(
+        self.nPatientsWaiting = PrevalenceSamplePath(
             name='Number of patients waiting', initial_size=0, warm_up_period=warm_up_period)
 
         # sample path for the patients in system
-        self.nPatientInSystem = Path.PrevalenceSamplePath(
+        self.nPatientInSystem = PrevalenceSamplePath(
             name='Number of patients in the urgent care', initial_size=0, warm_up_period=warm_up_period)
 
         # sample path for the number of exam rooms busy
-        self.nExamRoomBusy = Path.PrevalenceSamplePath(
+        self.nExamRoomBusy = PrevalenceSamplePath(
             name='Number of exam rooms busy', initial_size=0, warm_up_period=warm_up_period)
 
     def collect_patient_arrival(self, patient):
@@ -100,10 +101,10 @@ class SimOutputs:
         if self.traceOn:
             self.patientSummary.append([
                 str(patient),  # name
-                F.format_number(patient.tArrived, deci=D.DECI),  # time arrived
-                F.format_number(self.simCal.time, deci=D.DECI),  # time left
-                F.format_number(time_waiting, deci=D.DECI),  # time waiting
-                F.format_number(time_in_system, deci=D.DECI)]  # time in the system
+                format_number(patient.tArrived, deci=D.DECI),  # time arrived
+                format_number(self.simCal.time, deci=D.DECI),  # time left
+                format_number(time_waiting, deci=D.DECI),  # time waiting
+                format_number(time_in_system, deci=D.DECI)]  # time in the system
             )
 
     def collect_patient_starting_exam(self):

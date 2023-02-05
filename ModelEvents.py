@@ -1,6 +1,8 @@
 from enum import Enum
-import InputData as D
-from SimPy.DiscreteEventSim import SimulationEvent as Event
+
+from deampy.discrete_event_sim import SimulationEvent
+
+import DESInputData as D
 
 
 class Priority(Enum):
@@ -11,7 +13,7 @@ class Priority(Enum):
     CLOSE = 2
 
 
-class Arrival(Event):
+class Arrival(SimulationEvent):
     def __init__(self, time, patient, urgent_care):
         """
         creates the arrival of the next patient event
@@ -20,7 +22,7 @@ class Arrival(Event):
         :param urgent_care: the urgent care
         """
         # initialize the master class
-        Event.__init__(self, time=time, priority=Priority.ARRIVAL.value)
+        SimulationEvent.__init__(self, time=time, priority=Priority.ARRIVAL.value)
 
         self.patient = patient
         self.urgentCare = urgent_care
@@ -36,7 +38,7 @@ class Arrival(Event):
         self.urgentCare.process_new_patient(patient=self.patient, rng=rng)
 
 
-class EndOfExam(Event):
+class EndOfExam(SimulationEvent):
     def __init__(self, time, exam_room, urgent_care):
         """
         create the end of service for an specified exam room
@@ -45,7 +47,7 @@ class EndOfExam(Event):
         :param urgent_care: the urgent care
         """
         # initialize the base class
-        Event.__init__(self, time=time, priority=Priority.END_OF_EXAM.value)
+        SimulationEvent.__init__(self, time=time, priority=Priority.END_OF_EXAM.value)
 
         self.examRoom = exam_room
         self.urgentCare = urgent_care
@@ -61,7 +63,7 @@ class EndOfExam(Event):
         self.urgentCare.process_end_of_exam(exam_room=self.examRoom, rng=rng)
 
 
-class CloseUrgentCare(Event):
+class CloseUrgentCare(SimulationEvent):
     def __init__(self, time, urgent_care):
         """
         create the event to close the urgent care
@@ -72,7 +74,7 @@ class CloseUrgentCare(Event):
         self.urgentCare = urgent_care
 
         # call the master class initialization
-        Event.__init__(self, time=time, priority=Priority.CLOSE.value)
+        SimulationEvent.__init__(self, time=time, priority=Priority.CLOSE.value)
 
         # trace
         urgent_care.trace.add_message(

@@ -1,8 +1,9 @@
-import UrgentCareModel as M
-import InputData as D
+import deampy.plots.histogram as hist
+import deampy.plots.sample_paths as path
+
+import DESInputData as D
 import ModelParameters as P
-import SimPy.Plots.Histogram as Hist
-import SimPy.Plots.SamplePaths as Path
+import UrgentCareModel as M
 
 # create an urgent care model
 urgentCareModel = M.UrgentCareModel(id=1, parameters=P.Parameters())
@@ -11,30 +12,30 @@ urgentCareModel = M.UrgentCareModel(id=1, parameters=P.Parameters())
 urgentCareModel.simulate(sim_duration=D.SIM_DURATION)
 
 # sample path for patients waiting
-Path.plot_sample_path(
+path.plot_sample_path(
     sample_path=urgentCareModel.simOutputs.nPatientsWaiting,
     title='Patients Waiting',
     x_label='Simulation time (hours)',
 )
 # sample path for patients in the system
-Path.plot_sample_path(
+path.plot_sample_path(
     sample_path=urgentCareModel.simOutputs.nPatientInSystem,
     title='Patients In System',
     x_label='Simulation time (hours)',
 )
 # sample path for exam rooms busy
-Path.plot_sample_path(
+path.plot_sample_path(
     sample_path=urgentCareModel.simOutputs.nExamRoomBusy,
     title='Exam Rooms Busy',
     x_label='Simulation time (hours)'
 )
-Hist.plot_histogram(
+hist.plot_histogram(
     data=urgentCareModel.simOutputs.patientTimeInSystem,
     title='Patients Time in System',
     x_label='Hours',
     #bin_width=.2
 )
-Hist.plot_histogram(
+hist.plot_histogram(
     data=urgentCareModel.simOutputs.patientTimeInWaitingRoom,
     title='Patients Time in Waiting Room',
     x_label='Hours',
