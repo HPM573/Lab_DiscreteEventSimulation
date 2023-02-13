@@ -108,7 +108,7 @@ class Physician:
         # schedule the end of exam
         self.simCal.add_event(
             EndOfExam(time=exam_completion_time,
-                      exam_room=self,
+                      physician=self,
                       urgent_care=self.urgentCare)
         )
 

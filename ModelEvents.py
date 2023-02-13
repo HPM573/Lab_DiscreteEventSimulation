@@ -39,28 +39,28 @@ class Arrival(SimulationEvent):
 
 
 class EndOfExam(SimulationEvent):
-    def __init__(self, time, exam_room, urgent_care):
+    def __init__(self, time, physician, urgent_care):
         """
-        create the end of service for an specified exam room
+        create the end of service for a specified physician
         :param time: time of the service completion
-        :param exam_room: the exam room
+        :param physician: the physician
         :param urgent_care: the urgent care
         """
         # initialize the base class
         SimulationEvent.__init__(self, time=time, priority=Priority.END_OF_EXAM.value)
 
-        self.examRoom = exam_room
+        self.physician = physician
         self.urgentCare = urgent_care
 
         # trace
         urgent_care.trace.add_message(
-            str(exam_room) + ' will finish service at time {t:.{deci}f}.'.format(t=time, deci=D.DECI))
+            str(physician) + ' will finish service at time {t:.{deci}f}.'.format(t=time, deci=D.DECI))
 
     def process(self, rng=None):
         """ processes the end of service event """
 
-        # process the end of service for this exam room
-        self.urgentCare.process_end_of_exam(physician=self.examRoom, rng=rng)
+        # process the end of service for this physician
+        self.urgentCare.process_end_of_exam(physician=self.physician, rng=rng)
 
 
 class CloseUrgentCare(SimulationEvent):
