@@ -32,7 +32,7 @@ class Arrival(Event):
 class EndOfExam(Event):
     def __init__(self, time, exam_room, urgent_care):
         """
-        create the end of service for an specified exam room
+        create the end of service for a specified exam room
         :param time: time of the service completion
         :param exam_room: the exam room
         :param urgent_care: the urgent care

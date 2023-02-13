@@ -74,7 +74,7 @@ class ExamRoom:
         )
 
     def remove_patient(self):
-        """ :returns the patient that was being served in this exam room"""
+        """ returns the patient that was being served in this exam room"""
 
         # store the patient to be returned and set the patient that was being served to None
         returned_patient = self.patientBeingServed
