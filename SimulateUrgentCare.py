@@ -6,7 +6,7 @@ import ModelParameters as P
 import UrgentCareModel as M
 
 # create an urgent care model
-urgentCareModel = M.UrgentCareModel(id=1, parameters=P.Parameters())
+urgentCareModel = M.UrgentCareModel(id=1, parameters=P.Parameters(), warm_up_period=D.WARM_UP)
 
 # simulate the urgent care
 urgentCareModel.simulate(sim_duration=D.SIM_DURATION)

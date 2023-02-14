@@ -1,41 +1,35 @@
-from deampy.format_functions import format_number
 from deampy.sample_path import PrevalenceSamplePath
-
-import DESInputData as D
 
 
 class SimOutputs:
     # to collect the outputs of a simulation run
 
-    def __init__(self, sim_cal, trace_on=False):
+    def __init__(self, sim_cal, warm_up_period):
         """
         :param sim_cal: simulation calendar
-        :param trace_on: set to True to report patient summary
+        :param warm_up_period: warm up period
         """
 
         self.simCal = sim_cal           # simulation calendar (to know the current time)
-        self.traceOn = trace_on         # if should prepare patient summary report
+        self.warmUpPeriod = warm_up_period  # warm up period
         self.nPatientsArrived = 0       # number of patients arrived
         self.nPatientsServed = 0         # number of patients served
         self.patientTimeInSystem = []   # observations on patients time in urgent care
         self.patientTimeInWaitingRoom = []  # observations on patients time in the waiting room
 
         self.patientSummary = []    # id, tArrived, tLeft, duration waited, duration in the system
-        if self.traceOn:
-            self.patientSummary.append(
-                ['Patient', 'Time Arrived', 'Time Left', 'Time Waited', 'Time In the System'])
 
         # sample path for the patients waiting
         self.nPatientsWaiting = PrevalenceSamplePath(
-            name='Number of patients waiting', initial_size=0)
+            name='Number of patients waiting', initial_size=0, warm_up_period=warm_up_period)
 
         # sample path for the patients in system
         self.nPatientInSystem = PrevalenceSamplePath(
-            name='Number of patients in the urgent care', initial_size=0)
+            name='Number of patients in the urgent care', initial_size=0, warm_up_period=warm_up_period)
 
         # sample path for the number of physicians busy
         self.nPhysiciansBusy = PrevalenceSamplePath(
-            name='Number of physicians busy', initial_size=0)
+            name='Number of physicians busy', initial_size=0, warm_up_period=warm_up_period)
 
     def collect_patient_arrival(self, patient):
         """ collects statistics upon arrival of a patient
@@ -43,7 +37,8 @@ class SimOutputs:
         """
 
         # increment the number of patients arrived
-        self.nPatientsArrived += 1
+        if self.simCal.time > self.warmUpPeriod:
+            self.nPatientsArrived += 1
 
         # update the sample path of patients in the system
         self.nPatientInSystem.record_increment(time=self.simCal.time, increment=+1)
@@ -89,20 +84,10 @@ class SimOutputs:
         self.nPatientInSystem.record_increment(time=self.simCal.time, increment=-1)
         self.nPhysiciansBusy.record_increment(time=self.simCal.time, increment=-1)
 
-
-        self.nPatientsServed += 1
-        self.patientTimeInWaitingRoom.append(time_waiting)
-        self.patientTimeInSystem.append(time_in_system)
-
-        # build the patient summary
-        if self.traceOn:
-            self.patientSummary.append([
-                str(patient),  # name
-                format_number(patient.tArrived, deci=D.DECI),  # time arrived
-                format_number(self.simCal.time, deci=D.DECI),  # time left
-                format_number(time_waiting, deci=D.DECI),  # time waiting
-                format_number(time_in_system, deci=D.DECI)]  # time in the system
-            )
+        if self.simCal.time > self.warmUpPeriod:
+            self.nPatientsServed += 1
+            self.patientTimeInWaitingRoom.append(time_waiting)
+            self.patientTimeInSystem.append(time_in_system)
 
     def collect_patient_starting_exam(self):
         """ collects statistics for a patient who just started the exam """
