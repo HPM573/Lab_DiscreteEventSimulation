@@ -1,4 +1,4 @@
-from SimPy.DiscreteEventSim import SimulationEvent as Event
+from deampy.discrete_event_sim import SimulationEvent
 
 
 """ priority for processing the urgent care simulation events
@@ -8,7 +8,7 @@ END_OF_EXAM = 0
 CLOSE = 2
 
 
-class Arrival(Event):
+class Arrival(SimulationEvent):
     def __init__(self, time, patient, urgent_care):
         """
         creates the arrival of the next patient event
@@ -17,7 +17,7 @@ class Arrival(Event):
         :param urgent_care: the urgent care
         """
         # initialize the base class
-        Event.__init__(self, time=time, priority=ARRIVAL)
+        SimulationEvent.__init__(self, time=time, priority=ARRIVAL)
 
         self.patient = patient
         self.urgentCare = urgent_care
@@ -29,28 +29,28 @@ class Arrival(Event):
         self.urgentCare.process_new_patient(patient=self.patient, rng=rng)
 
 
-class EndOfExam(Event):
-    def __init__(self, time, exam_room, urgent_care):
+class EndOfExam(SimulationEvent):
+    def __init__(self, time, physician, urgent_care):
         """
-        create the end of service for a specified exam room
+        create the end of service for a specified physician
         :param time: time of the service completion
-        :param exam_room: the exam room
+        :param physician: the physician
         :param urgent_care: the urgent care
         """
         # initialize the base class
-        Event.__init__(self, time=time, priority=END_OF_EXAM)
+        SimulationEvent.__init__(self, time=time, priority=END_OF_EXAM)
 
-        self.examRoom = exam_room
+        self.physician = physician
         self.urgentCare = urgent_care
 
     def process(self, rng=None):
         """ processes the end of service event """
 
         # process the end of service for this exam room
-        self.urgentCare.process_end_of_exam(physician=self.examRoom, rng=rng)
+        self.urgentCare.process_end_of_exam(physician=self.physician, rng=rng)
 
 
-class CloseUrgentCare(Event):
+class CloseUrgentCare(SimulationEvent):
     def __init__(self, time, urgent_care):
         """
         create the event to close the urgent care
@@ -61,7 +61,7 @@ class CloseUrgentCare(Event):
         self.urgentCare = urgent_care
 
         # call the master class initialization
-        Event.__init__(self, time=time, priority=CLOSE)
+        SimulationEvent.__init__(self, time=time, priority=CLOSE)
 
     def process(self, rng=None):
         """ processes the closing event """

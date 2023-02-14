@@ -1,6 +1,6 @@
-import UrgentCareModel as M
-import InputData as D
+import DESInputData as D
 import ModelParameters as P
+import UrgentCareModel as M
 
 # create an urgent care model
 urgentCareModel = M.UrgentCareModel(id=1, parameters=P.Parameters())

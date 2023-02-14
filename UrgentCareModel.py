@@ -1,10 +1,8 @@
-import SimPy.InOutFunctions as IO
-import SimPy.DiscreteEventSim as SimCls
-import SimPy.Support.Simulation as Sim
-import InputData as D
-import ModelEvents as E
-import ModelEntities as M
 import numpy as np
+from deampy.discrete_event_sim import SimulationCalendar
+
+from ModelEntities import UrgentCare, Patient
+from ModelEvents import CloseUrgentCare, Arrival
 
 
 class UrgentCareModel:
@@ -41,17 +39,17 @@ class UrgentCareModel:
         """
 
         # simulation calendar
-        self.simCal = SimCls.SimulationCalendar()
+        self.simCal = SimulationCalendar()
 
         # urgent care
-        self.urgentCare = M.UrgentCare(id=0,
-                                       parameters=self.params,
-                                       sim_cal=self.simCal)
+        self.urgentCare = UrgentCare(id=0,
+                                     parameters=self.params,
+                                     sim_cal=self.simCal)
 
         # schedule the closing event
         self.simCal.add_event(
-            event=E.CloseUrgentCare(time=self.params.hoursOpen,
-                                    urgent_care=self.urgentCare)
+            event=CloseUrgentCare(time=self.params.hoursOpen,
+                                  urgent_care=self.urgentCare)
         )
 
         # find the arrival time of the first patient
@@ -59,7 +57,7 @@ class UrgentCareModel:
 
         # schedule the arrival of the first patient
         self.simCal.add_event(
-            event=E.Arrival(time=arrival_time,
-                            patient=M.Patient(id=0),
-                            urgent_care=self.urgentCare)
+            event=Arrival(time=arrival_time,
+                          patient=Patient(id=0),
+                          urgent_care=self.urgentCare)
         )
