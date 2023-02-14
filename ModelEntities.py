@@ -38,11 +38,11 @@ class WaitingRoom:
         return len(self.patientsWaiting)
 
 
-class ExamRoom:
+class Physician:
     def __init__(self, id, service_time_dist, urgent_care, sim_cal):
-        """ create an exam room
-        :param id: (integer) the exam room ID
-        :param service_time_dist: distribution of service time in this exam room
+        """ create a physician
+        :param id: (integer) the physician ID
+        :param service_time_dist: distribution of service time
         :param urgent_care: urgent care
         :param sim_cal: simulation calendar
         """
@@ -59,7 +59,7 @@ class ExamRoom:
         :param rng: random number generator
         """
 
-        # the exam room is busy
+        # the physician is busy
         self.patientBeingServed = patient
         self.isBusy = True
 
@@ -69,21 +69,18 @@ class ExamRoom:
         # schedule the end of exam
         self.simCal.add_event(
             EndOfExam(time=exam_completion_time,
-                      exam_room=self,
+                      physician=self,
                       urgent_care=self.urgentCare)
         )
 
     def remove_patient(self):
-        """ returns the patient that was being served in this exam room"""
+        """ remove the patient that was being served """
 
-        # store the patient to be returned and set the patient that was being served to None
-        returned_patient = self.patientBeingServed
-        self.patientBeingServed = None
-
-        # the exam room is idle now
+        # the physician is idle now
         self.isBusy = False
 
-        return returned_patient
+        # remove the patient
+        self.patientBeingServed = None
 
 
 class UrgentCare:
@@ -111,10 +108,10 @@ class UrgentCare:
         # exam rooms
         self.examRooms = []
         for i in range(self.params.nExamRooms):
-            self.examRooms.append(ExamRoom(id=i,
-                                           service_time_dist=self.params.examTimeDist,
-                                           urgent_care=self,
-                                           sim_cal=self.simCal))
+            self.examRooms.append(Physician(id=i,
+                                            service_time_dist=self.params.examTimeDist,
+                                            urgent_care=self,
+                                            sim_cal=self.simCal))
 
     def process_new_patient(self, patient, rng):
         """ receives a new patient
@@ -128,9 +125,6 @@ class UrgentCare:
 
         # update number of patients arrived
         self.nPatientsArrived += 1
-
-        # add the new patient to the list of patients
-        self.patients.append(patient)
 
         # check if anyone is waiting
         if self.waitingRoom.get_num_patients_waiting() > 0:
@@ -165,17 +159,14 @@ class UrgentCare:
             )
         )
 
-    def process_end_of_exam(self, exam_room, rng):
-        """ processes the end of exam in the specified exam room
-        :param exam_room: the exam room where the service is ended
+    def process_end_of_exam(self, physician, rng):
+        """ processes the end of exam for this physician
+        :param physician: the physician that finished the exam
         :param rng: random number generator
         """
 
-        # get the patient who is about to be discharged
-        discharged_patient = exam_room.remove_patient()
-
-        # remove the discharged patient from the list of patients
-        self.patients.remove(discharged_patient)
+        # remove the patient
+        physician.remove_patient()
 
         # update the number of patients served
         self.nPatientsServed += 1
@@ -184,7 +175,7 @@ class UrgentCare:
         if self.waitingRoom.get_num_patients_waiting() > 0:
 
             # start serving the next patient in line
-            exam_room.exam(patient=self.waitingRoom.get_next_patient(), rng=rng)
+            physician.exam(patient=self.waitingRoom.get_next_patient(), rng=rng)
 
     def process_close_urgent_care(self):
         """ process the closing of the urgent care """

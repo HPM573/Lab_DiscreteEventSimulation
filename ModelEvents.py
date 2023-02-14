@@ -47,7 +47,7 @@ class EndOfExam(Event):
         """ processes the end of service event """
 
         # process the end of service for this exam room
-        self.urgentCare.process_end_of_exam(exam_room=self.examRoom, rng=rng)
+        self.urgentCare.process_end_of_exam(physician=self.examRoom, rng=rng)
 
 
 class CloseUrgentCare(Event):
