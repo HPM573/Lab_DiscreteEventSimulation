@@ -100,15 +100,13 @@ class UrgentCare:
         self.ifOpen = True  # if the urgent care is open and admitting new patients
 
         # model entities
-        self.patients = []          # list of patients
-
         # waiting room
         self.waitingRoom = WaitingRoom()
 
-        # exam rooms
-        self.examRooms = []
-        for i in range(self.params.nExamRooms):
-            self.examRooms.append(Physician(id=i,
+        # physicians
+        self.physician = []
+        for i in range(self.params.nPhysicians):
+            self.physician.append(Physician(id=i,
                                             service_time_dist=self.params.examTimeDist,
                                             urgent_care=self,
                                             sim_cal=self.simCal))
@@ -131,19 +129,19 @@ class UrgentCare:
             # if anyone is waiting, add the patient to the waiting room
             self.waitingRoom.add_patient(patient=patient)
         else:
-            # find an idle exam room
-            idle_room_found = False
-            for room in self.examRooms:
-                # if this room is busy
-                if not room.isBusy:
-                    # send the last patient to this exam room
-                    room.exam(patient=patient, rng=rng)
-                    idle_room_found = True
+            # find an idle physician
+            idle_physician_found = False
+            for physician in self.physician:
+                # if this physician is busy
+                if not physician.isBusy:
+                    # send the last patient to this physician
+                    physician.exam(patient=patient, rng=rng)
+                    idle_physician_found = True
                     # break the for loop
                     break
 
-            # if no idle room was found
-            if not idle_room_found:
+            # if no idle physician was found
+            if not idle_physician_found:
                 # add the patient to the waiting room
                 self.waitingRoom.add_patient(patient=patient)
 
