@@ -29,15 +29,15 @@ class SimOutputs:
 
         # sample path for the patients waiting
         self.nPatientsWaiting = PrevalenceSamplePath(
-            name='Number of patients waiting', initial_size=0, warm_up_period=warm_up_period)
+            name='Number of patients waiting', initial_size=0)
 
         # sample path for the patients in system
         self.nPatientInSystem = PrevalenceSamplePath(
-            name='Number of patients in the urgent care', initial_size=0, warm_up_period=warm_up_period)
+            name='Number of patients in the urgent care', initial_size=0)
 
         # sample path for the number of physicians busy
         self.nPhysiciansBusy = PrevalenceSamplePath(
-            name='Number of physicians busy', initial_size=0, warm_up_period=warm_up_period)
+            name='Number of physicians busy', initial_size=0)
 
     def collect_patient_arrival(self, patient):
         """ collects statistics upon arrival of a patient
@@ -45,8 +45,7 @@ class SimOutputs:
         """
 
         # increment the number of patients arrived
-        if self.simCal.time > self.warmUpPeriod:
-            self.nPatientsArrived += 1
+        self.nPatientsArrived += 1
 
         # update the sample path of patients in the system
         self.nPatientInSystem.record_increment(time=self.simCal.time, increment=+1)
@@ -92,10 +91,10 @@ class SimOutputs:
         self.nPatientInSystem.record_increment(time=self.simCal.time, increment=-1)
         self.nPhysiciansBusy.record_increment(time=self.simCal.time, increment=-1)
 
-        if self.simCal.time > self.warmUpPeriod:
-            self.nPatientsServed += 1
-            self.patientTimeInWaitingRoom.append(time_waiting)
-            self.patientTimeInSystem.append(time_in_system)
+
+        self.nPatientsServed += 1
+        self.patientTimeInWaitingRoom.append(time_waiting)
+        self.patientTimeInSystem.append(time_in_system)
 
         # build the patient summary
         if self.traceOn:
