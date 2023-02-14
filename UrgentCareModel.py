@@ -49,7 +49,7 @@ class UrgentCareModel:
         self.simCal = SimulationCalendar()
 
         # simulation outputs
-        self.simOutputs = SimOutputs(sim_cal=self.simCal, warm_up_period=self.warmUpPeriod)
+        self.simOutputs = SimOutputs(sim_cal=self.simCal)
 
         # urgent care
         self.urgentCare = UrgentCare(id=0,
