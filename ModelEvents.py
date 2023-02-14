@@ -39,7 +39,7 @@ class EndOfExam(SimulationEvent):
     def process(self, rng=None):
         """ processes the end of service event """
 
-        # process the end of service for this exam room
+        # process the end of service for this physician
 
 
 class CloseUrgentCare(SimulationEvent):

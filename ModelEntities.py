@@ -99,7 +99,7 @@ class UrgentCare:
 
 
     def process_end_of_exam(self, physician, rng):
-        """ processes the end of exam in the specified exam room
+        """ processes the end of exam for this physician
         :param physician: the physician that completed their exam
         :param rng: random number generator
         """
