@@ -54,5 +54,3 @@ print('Average number of patients in the system:', urgentCareModel.simOutputs.nP
 print('Average utilization of physicians (%):',
       100 * urgentCareModel.simOutputs.nPhysiciansBusy.stat.get_mean() / D.N_PHYSICIANS)
 
-# print trace
-urgentCareModel.print_trace()

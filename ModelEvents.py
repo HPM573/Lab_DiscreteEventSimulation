@@ -2,8 +2,6 @@ from enum import Enum
 
 from deampy.discrete_event_sim import SimulationEvent
 
-import DESInputData as D
-
 
 class Priority(Enum):
     """ priority for processing the urgent care simulation events 
@@ -27,10 +25,6 @@ class Arrival(SimulationEvent):
         self.patient = patient
         self.urgentCare = urgent_care
 
-        # trace
-        urgent_care.trace.add_message(
-            str(patient) + ' will arrive at time {t:.{deci}f}.'.format(t=time, deci=D.DECI))
-
     def process(self, rng=None):
         """ processes the arrival of a new patient """
 
@@ -52,10 +46,6 @@ class EndOfExam(SimulationEvent):
         self.physician = physician
         self.urgentCare = urgent_care
 
-        # trace
-        urgent_care.trace.add_message(
-            str(physician) + ' will finish service at time {t:.{deci}f}.'.format(t=time, deci=D.DECI))
-
     def process(self, rng=None):
         """ processes the end of service event """
 
@@ -75,10 +65,6 @@ class CloseUrgentCare(SimulationEvent):
 
         # call the master class initialization
         SimulationEvent.__init__(self, time=time, priority=Priority.CLOSE.value)
-
-        # trace
-        urgent_care.trace.add_message(
-            'Urgent care will close at time {t:.{deci}f}.'.format(t=time, deci=D.DECI))
 
     def process(self, rng=None):
         """ processes the closing event """

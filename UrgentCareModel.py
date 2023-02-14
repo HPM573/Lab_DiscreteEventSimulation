@@ -1,9 +1,6 @@
 import numpy as np
 from deampy.discrete_event_sim import SimulationCalendar
-from deampy.in_out_functions import write_csv
-from deampy.support.simulation import DiscreteEventSimTrace
 
-import DESInputData as D
 from ModelEntities import UrgentCare, Patient
 from ModelEvents import CloseUrgentCare, Arrival
 from ModelOutputs import SimOutputs
@@ -51,20 +48,13 @@ class UrgentCareModel:
         self.simCal = SimulationCalendar()
 
         # simulation outputs
-        self.simOutputs = SimOutputs(sim_cal=self.simCal,
-                                     trace_on=D.TRACE_ON)
-
-        # simulation trace
-        self.trace = DiscreteEventSimTrace(sim_calendar=self.simCal,
-                                           if_should_trace=D.TRACE_ON,
-                                           deci=D.DECI)
+        self.simOutputs = SimOutputs(sim_cal=self.simCal)
 
         # urgent care
         self.urgentCare = UrgentCare(id=0,
                                      parameters=self.params,
                                      sim_cal=self.simCal,
-                                     sim_out=self.simOutputs,
-                                     trace=self.trace)
+                                     sim_out=self.simOutputs)
 
         # schedule the closing event
         self.simCal.add_event(
@@ -81,16 +71,3 @@ class UrgentCareModel:
                           patient=Patient(id=0),
                           urgent_care=self.urgentCare)
         )
-
-    def print_trace(self):
-        """ outputs trace """
-
-        # simulation trace
-        self.trace.print_trace(filename='Trace-Replication' + str(self.id) + '.txt',
-                               directory='Trace',
-                               delete_existing_files=True)
-        # patient summary
-        write_csv(file_name='Patients-Replication' + str(self.id) + '.txt',
-                  rows=self.simOutputs.patientSummary,
-                  directory='Patients Summary',
-                  delete_existing_files=True)
