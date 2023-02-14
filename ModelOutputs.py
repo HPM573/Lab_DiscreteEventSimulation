@@ -15,8 +15,6 @@ class SimOutputs:
         self.patientTimeInSystem = []   # observations on patients time in urgent care
         self.patientTimeInWaitingRoom = []  # observations on patients time in the waiting room
 
-        self.patientSummary = []    # id, tArrived, tLeft, duration waited, duration in the system
-
         # sample path for the patients waiting
         self.nPatientsWaiting = PrevalenceSamplePath(
             name='Number of patients waiting', initial_size=0)
