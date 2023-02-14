@@ -217,7 +217,7 @@ class UrgentCare:
         """
 
         # trace
-        self.trace.add_message('Processing end of exam in ' + str(physician) + '.')
+        self.trace.add_message('Processing the end of exam for ' + str(physician) + '.')
 
         # remove the patient
         physician.remove_patient()

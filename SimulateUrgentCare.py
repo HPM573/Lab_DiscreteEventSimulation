@@ -23,10 +23,10 @@ path.plot_sample_path(
     title='Patients In System',
     x_label='Simulation time (hours)',
 )
-# sample path for exam rooms busy
+# sample path for physician utilization
 path.plot_sample_path(
     sample_path=urgentCareModel.simOutputs.nPhysiciansBusy,
-    title='Exam Rooms Busy',
+    title='Physician Utilization',
     x_label='Simulation time (hours)'
 )
 hist.plot_histogram(
@@ -51,7 +51,7 @@ print('Average patient waiting time:', urgentCareModel.simOutputs.get_ave_patien
 print('Maximum number of patients in the waiting room:', urgentCareModel.simOutputs.nPatientsWaiting.stat.get_max())
 print('Average number of patients in the waiting room:', urgentCareModel.simOutputs.nPatientsWaiting.stat.get_mean())
 print('Average number of patients in the system:', urgentCareModel.simOutputs.nPatientInSystem.stat.get_mean())
-print('Average utilization of exam rooms (%):',
+print('Average utilization of physicians (%):',
       100 * urgentCareModel.simOutputs.nPhysiciansBusy.stat.get_mean() / D.N_PHYSICIANS)
 
 # print trace
