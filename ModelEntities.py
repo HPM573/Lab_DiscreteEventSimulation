@@ -113,7 +113,7 @@ class Physician:
         )
 
     def remove_patient(self):
-        """ returns the patient that was being served """
+        """ remove the patient that was being served """
 
         # the physician is idle now
         self.isBusy = False
