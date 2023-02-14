@@ -52,7 +52,6 @@ class UrgentCareModel:
 
         # simulation outputs
         self.simOutputs = SimOutputs(sim_cal=self.simCal,
-                                     warm_up_period=D.WARM_UP,
                                      trace_on=D.TRACE_ON)
 
         # simulation trace

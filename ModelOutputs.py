@@ -7,15 +7,13 @@ import DESInputData as D
 class SimOutputs:
     # to collect the outputs of a simulation run
 
-    def __init__(self, sim_cal, warm_up_period, trace_on=False):
+    def __init__(self, sim_cal, trace_on=False):
         """
         :param sim_cal: simulation calendar
-        :param warm_up_period: warm up period (hours)
         :param trace_on: set to True to report patient summary
         """
 
         self.simCal = sim_cal           # simulation calendar (to know the current time)
-        self.warmUpPeriod = warm_up_period     # warm up period
         self.traceOn = trace_on         # if should prepare patient summary report
         self.nPatientsArrived = 0       # number of patients arrived
         self.nPatientsServed = 0         # number of patients served
