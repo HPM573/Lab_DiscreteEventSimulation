@@ -1,6 +1,3 @@
-from ModelEvents import Arrival, EndOfExam
-
-
 class Patient:
     def __init__(self, id):
         """ create a patient
@@ -36,11 +33,11 @@ class WaitingRoom:
         return len(self.patientsWaiting)
 
 
-class ExamRoom:
+class Physician:
     def __init__(self, id, service_time_dist, urgent_care, sim_cal):
-        """ create an exam room
-        :param id: (integer) the exam room ID
-        :param service_time_dist: distribution of service time in this exam room
+        """ create a physician
+        :param id: (integer) the physician ID
+        :param service_time_dist: distribution of service time
         :param urgent_care: urgent care
         :param sim_cal: simulation calendar
         """
@@ -52,23 +49,24 @@ class ExamRoom:
         self.patientBeingServed = None  # the patient who is being served
 
     def exam(self, patient, rng):
-        """ starts examining on the patient
+        """ starts examining the patient
         :param patient: a patient
         :param rng: random number generator
         """
 
-        # the exam room is busy
+        # the physician is busy
 
         # find the exam completion time (current time + service time)
 
         # schedule the end of exam
 
     def remove_patient(self):
-        """ :returns the patient that was being served in this exam room"""
+        """ remove the patient that was being served """
 
-        # store the patient to be returned and set the patient that was being served to None
+        # the physician is idle now
 
-        # the exam room is idle now
+        # remove the patient
+
 
 
 class UrgentCare:
@@ -88,11 +86,9 @@ class UrgentCare:
         self.ifOpen = True  # if the urgent care is open and admitting new patients
 
         # model entities
-        self.patients = []          # list of patients
-
         # waiting room
 
-        # exam rooms
+        # physicians
 
     def process_new_patient(self, patient, rng):
         """ receives a new patient
@@ -102,9 +98,9 @@ class UrgentCare:
 
 
 
-    def process_end_of_exam(self, exam_room, rng):
+    def process_end_of_exam(self, physician, rng):
         """ processes the end of exam in the specified exam room
-        :param exam_room: the exam room where the service is ended
+        :param physician: the physician that completed their exam
         :param rng: random number generator
         """
 

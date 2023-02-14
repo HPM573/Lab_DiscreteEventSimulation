@@ -1,6 +1,4 @@
-from enum import Enum
-import InputData as D
-from SimPy.DiscreteEventSim import SimulationEvent as Event
+from deampy.discrete_event_sim import SimulationEvent
 
 
 """ priority for processing the urgent care simulation events
@@ -10,7 +8,7 @@ END_OF_EXAM = 0
 CLOSE = 2
 
 
-class Arrival(Event):
+class Arrival(SimulationEvent):
     def __init__(self, time, patient, urgent_care):
         """
         creates the arrival of the next patient event
@@ -28,12 +26,12 @@ class Arrival(Event):
         # receive the new patient
 
 
-class EndOfExam(Event):
-    def __init__(self, time, exam_room, urgent_care):
+class EndOfExam(SimulationEvent):
+    def __init__(self, time, physician, urgent_care):
         """
-        create the end of service for an specified exam room
+        create the end of service for a specified physician
         :param time: time of the service completion
-        :param exam_room: the exam room
+        :param physician: the physician
         :param urgent_care: the urgent care
         """
         # initialize the base class
@@ -44,7 +42,7 @@ class EndOfExam(Event):
         # process the end of service for this exam room
 
 
-class CloseUrgentCare(Event):
+class CloseUrgentCare(SimulationEvent):
     def __init__(self, time, urgent_care):
         """
         create the event to close the urgent care
