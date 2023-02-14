@@ -54,7 +54,7 @@ class Physician:
         self.patientBeingServed = None  # the patient who is being served
 
     def exam(self, patient, rng):
-        """ starts examining on the patient
+        """ starts examining the patient
         :param patient: a patient
         :param rng: random number generator
         """
