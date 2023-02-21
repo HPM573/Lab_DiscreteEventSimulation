@@ -1,4 +1,4 @@
-import InputData as D
+import DESInputData as D
 
 
 class Parameters:
