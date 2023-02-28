@@ -7,16 +7,13 @@ from ModelOutputs import SimOutputs
 
 
 class UrgentCareModel:
-    def __init__(self, id, parameters, warm_up_period):
+    def __init__(self, id, parameters):
         """
         :param id: ID of this urgent care model
-        :param parameters: parameters of this model
-        :param warm_up_period: warm up period
         """
 
         self.id = id
         self.params = parameters    # model parameters
-        self.warmUpPeriod = warm_up_period  # warm up period
         self.simCal = None          # simulation calendar
         self.simOutputs = None      # simulation outputs
         self.urgentCare = None      # urgent care
