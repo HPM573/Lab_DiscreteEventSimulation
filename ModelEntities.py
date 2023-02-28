@@ -66,10 +66,6 @@ class Physician:
         self.isBusy = False
         self.patientBeingServed = None  # the patient who is being served
 
-    def __str__(self):
-        """ :returns (string) the physician id """
-        return "Physician " + str(self.id)
-
     def exam(self, patient, rng):
         """ starts examining the patient
         :param patient: a patient
