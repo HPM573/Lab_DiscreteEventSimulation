@@ -16,8 +16,7 @@ class SimOutputs:
         self.patientTimeInWaitingRoom = []  # observations on patients time in the waiting room
 
         # sample path for the patients waiting
-        self.nPatientsWaiting = PrevalenceSamplePath(
-            name='Number of patients waiting', initial_size=0)
+
 
         # sample path for the patients in system
         self.nPatientInSystem = PrevalenceSamplePath(
@@ -33,13 +32,10 @@ class SimOutputs:
         """
 
         # increment the number of patients arrived
-        self.nPatientsArrived += 1
 
         # update the sample path of patients in the system
-        self.nPatientInSystem.record_increment(time=self.simCal.time, increment=+1)
 
         # store arrival time of this patient
-        patient.tArrived = self.simCal.time
 
     def collect_patient_joining_waiting_room(self, patient):
         """ collects statistics when a patient joins the waiting room
@@ -47,10 +43,8 @@ class SimOutputs:
         """
 
         # store the time this patient joined the waiting room
-        patient.tJoinedWaitingRoom = self.simCal.time
 
         # update the sample path of patients waiting
-        self.nPatientsWaiting.record_increment(time=self.simCal.time, increment=1)
 
     def collect_patient_leaving_waiting_room(self, patient):
         """ collects statistics when a patient leave the waiting room
@@ -58,10 +52,8 @@ class SimOutputs:
         """
 
         # store the time this patient leaves the waiting room
-        patient.tLeftWaitingRoom = self.simCal.time
 
         # update the sample path
-        self.nPatientsWaiting.record_increment(time=self.simCal.time, increment=-1)
 
     def collect_patient_departure(self, patient):
         """ collects statistics for a departing patient
@@ -69,19 +61,7 @@ class SimOutputs:
         """
 
         # if patient never joined the waiting room, the waiting time is 0
-        if patient.tJoinedWaitingRoom is None:
-            time_waiting = 0
-        else:
-            time_waiting = patient.tLeftWaitingRoom - patient.tJoinedWaitingRoom
 
-        time_in_system = self.simCal.time - patient.tArrived
-
-        self.nPatientInSystem.record_increment(time=self.simCal.time, increment=-1)
-        self.nPhysiciansBusy.record_increment(time=self.simCal.time, increment=-1)
-
-        self.nPatientsServed += 1
-        self.patientTimeInWaitingRoom.append(time_waiting)
-        self.patientTimeInSystem.append(time_in_system)
 
     def collect_patient_starting_exam(self):
         """ collects statistics for a patient who just started the exam """
@@ -94,9 +74,7 @@ class SimOutputs:
         """
 
         # update sample paths
-        self.nPatientsWaiting.close(time=self.simCal.time)
-        self.nPatientInSystem.close(time=self.simCal.time)
-        self.nPhysiciansBusy.close(time=self.simCal.time)
+
 
     def get_ave_patient_time_in_system(self):
         """
