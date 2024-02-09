@@ -1,4 +1,4 @@
-from deampy.random_variats import Exponential
+from deampy.random_variates import Exponential
 
 import DESInputData as D
 
