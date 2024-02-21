@@ -104,12 +104,12 @@ class UrgentCare:
         self.waitingRoom = WaitingRoom()
 
         # physicians
-        self.physician = []
+        self.physicians = []
         for i in range(self.params.nPhysicians):
-            self.physician.append(Physician(id=i,
-                                            service_time_dist=self.params.examTimeDist,
-                                            urgent_care=self,
-                                            sim_cal=self.simCal))
+            self.physicians.append(Physician(id=i,
+                                             service_time_dist=self.params.examTimeDist,
+                                             urgent_care=self,
+                                             sim_cal=self.simCal))
 
     def process_new_patient(self, patient, rng):
         """ receives a new patient
@@ -131,7 +131,7 @@ class UrgentCare:
         else:
             # find an idle physician
             idle_physician_found = False
-            for physician in self.physician:
+            for physician in self.physicians:
                 # if this physician is busy
                 if not physician.isBusy:
                     # send the last patient to this physician
