@@ -1,4 +1,8 @@
 import numpy as np
+from deampy.discrete_event_sim import SimulationCalendar
+
+from ModelEntities import UrgentCare, Patient
+from ModelEvents import CloseUrgentCare, Arrival
 
 
 class UrgentCareModel:

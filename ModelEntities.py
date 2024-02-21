@@ -1,3 +1,6 @@
+from ModelEvents import Arrival, EndOfExam
+
+
 class Patient:
     def __init__(self, id):
         """ create a patient
